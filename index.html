@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Giovanni Lunetta – Data Scientist</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-content">
+      <div class="logo">GL</div>
+      <nav class="nav">
+        <a href="index.html" class="nav-link active">Home</a>
+        <a href="#projects" class="nav-link">Projects</a>
+        <a href="chat.html" class="nav-link">Chat</a>
+        <!-- Update these links as needed -->
+        <a href="#" class="nav-link" target="_blank">Resume</a>
+        <a href="#" class="nav-link" target="_blank">LinkedIn</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container hero-grid">
+        <div class="hero-text">
+          <h1>Hi, I’m Giovanni Lunetta.</h1>
+          <p class="hero-subtitle">
+            Data Scientist in the Technology Leadership Development Program (TLDP) at Johnson &amp; Johnson,
+            focused on turning complex data into practical, high-impact AI and analytics solutions.
+          </p>
+          <p class="hero-subtitle">
+            I love working at the intersection of data, products, and real-world decision-making—especially in
+            healthcare and commercial spaces.
+          </p>
+          <div class="hero-actions">
+            <a href="chat.html" class="button primary">Chat with my AI twin</a>
+            <a href="#projects" class="button secondary">View projects</a>
+          </div>
+        </div>
+        <div class="hero-side">
+          <div class="card">
+            <h2>Quick snapshot</h2>
+            <ul class="bullet-list">
+              <li>M.S. in Data Science, B.A. in Statistics &amp; Political Science – UConn</li>
+              <li>Experience across predictive modeling, clustering, and data products</li>
+              <li>Big sports fan: football, basketball, Knicks, and UConn Huskies</li>
+            </ul>
+            <p class="card-footer">
+              Prefer to ask questions instead of reading?
+              <a href="chat.html">Talk to the AI version of me →</a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="projects" class="section">
+      <div class="container">
+        <h2>Selected work &amp; interests</h2>
+        <div class="grid">
+          <article class="card">
+            <h3>VRAS Analytics &amp; surgical preferences</h3>
+            <p>
+              Clustering surgeons and modeling preferences from surgical log data to support better planning,
+              decision-making, and product strategy.
+            </p>
+          </article>
+          <article class="card">
+            <h3>wAIHA patient segmentation</h3>
+            <p>
+              HCP-level feature engineering and clustering to understand treatment patterns and identify
+              actionable segments for commercial and medical teams.
+            </p>
+          </article>
+          <article class="card">
+            <h3>GenAI &amp; document understanding</h3>
+            <p>
+              RAG pipelines, structured extraction, and evaluation workflows for complex regulatory and
+              medical documentation.
+            </p>
+          </article>
+        </div>
+        <p class="section-note">
+          Want more detail on any of these? Ask about them directly on the
+          <a href="chat.html">Chat</a> page.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-content">
+      <p>© <span id="year"></span> Giovanni Lunetta</p>
+      <p class="footer-note">
+        Built as a lightweight personal site. The chat experience is powered by Hugging Face Spaces and OpenAI.
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Set year dynamically
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

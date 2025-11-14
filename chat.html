@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Chat with Giovanni (AI)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-content">
+      <div class="logo">GL</div>
+      <nav class="nav">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="index.html#projects" class="nav-link">Projects</a>
+        <a href="chat.html" class="nav-link active">Chat</a>
+        <a href="#" class="nav-link" target="_blank">Resume</a>
+        <a href="#" class="nav-link" target="_blank">LinkedIn</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="section">
+      <div class="container">
+        <h1>Chat with Giovanni (AI)</h1>
+        <p class="hero-subtitle">
+          This is an AI version of me, running on Hugging Face Spaces. Ask about my background, TLDP experience,
+          projects, skills, or what I’m looking for in my next role.
+        </p>
+
+        <div class="chat-iframe-wrapper">
+          <iframe
+            src="https://glunetta02-career-conversation.hf.space"
+            frameborder="0"
+            allow="clipboard-write; clipboard-read; fullscreen"
+            title="Chat with Giovanni (AI)"
+          ></iframe>
+        </div>
+
+        <p class="section-note">
+          Note: This chatbot reflects my real experience and interests, but it’s still AI. If you’d like to talk
+          directly, feel free to reach out via email or LinkedIn.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-content">
+      <p>© <span id="year"></span> Giovanni Lunetta</p>
+      <p class="footer-note">
+        Powered by Hugging Face Spaces, Gradio, and OpenAI.
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
