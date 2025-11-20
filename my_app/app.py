@@ -1,0 +1,390 @@
+from dotenv import load_dotenv
+from openai import OpenAI
+import json
+import os
+import requests
+from pypdf import PdfReader
+import gradio as gr
+from pydantic import BaseModel
+from pathlib import Path
+from datetime import datetime, timezone
+
+
+load_dotenv(override=True)
+
+def push(text):
+    requests.post(
+        "https://api.pushover.net/1/messages.json",
+        data={
+            "token": os.getenv("PUSHOVER_TOKEN"),
+            "user": os.getenv("PUSHOVER_USER"),
+            "message": text,
+        }
+    )
+
+
+def record_user_details(email, name="Name not provided", notes="not provided"):
+    push(f"Recording {name} with email {email} and notes {notes}")
+    return {"recorded": "ok"}
+
+def record_user_details_ui(email, name="Name not provided", notes="not provided"):
+    email = (email or "").strip()
+    name = (name or "").strip() or "Name not provided"
+    notes = (notes or "").strip() or "not provided"
+
+    if not email or "@" not in email:
+        return "⚠️ Please enter a valid email address."
+
+    record_user_details(email=email, name=name, notes=notes)
+    return "✅ Thanks! Your details have been recorded."
+
+def record_unknown_question(question):
+    push(f"Recording {question}")
+    try:
+        data_dir = Path("data")
+        data_dir.mkdir(exist_ok=True)
+        log = {
+            "question": question,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+        }
+        with open(data_dir / "unknown_questions.jsonl", "a", encoding="utf-8") as f:
+            f.write(json.dumps(log) + "\n")
+    except Exception as e:
+        print(f"Failed to log unknown question: {e}", flush=True)
+    return {"recorded": "ok"}
+
+record_user_details_json = {
+    "name": "record_user_details",
+    "description": "Use this tool to record that a user is interested in being in touch and provided an email address",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "email": {
+                "type": "string",
+                "description": "The email address of this user"
+            },
+            "name": {
+                "type": "string",
+                "description": "The user's name, if they provided it"
+            }
+            ,
+            "notes": {
+                "type": "string",
+                "description": "Any additional information about the conversation that's worth recording to give context"
+            }
+        },
+        "required": ["email"],
+        "additionalProperties": False
+    }
+}
+
+record_unknown_question_json = {
+    "name": "record_unknown_question",
+    "description": "Always use this tool to record any question that couldn't be answered as you didn't know the answer",
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "question": {
+                "type": "string",
+                "description": "The question that couldn't be answered"
+            },
+        },
+        "required": ["question"],
+        "additionalProperties": False
+    }
+}
+
+tools = [{"type": "function", "function": record_user_details_json},
+        {"type": "function", "function": record_unknown_question_json}]
+
+
+class Evaluation(BaseModel):
+    is_acceptable: bool
+    feedback: str
+
+
+class Me:
+
+    def __init__(self):
+        self.openai = OpenAI()
+        self.name = "Giovanni Lunetta"
+        
+        # Load LinkedIn profile
+        reader = PdfReader("me/linkedin.pdf")
+        self.linkedin = ""
+        for page in reader.pages:
+            text = page.extract_text()
+            if text:
+                self.linkedin += text
+        
+        # Load Resume
+        try:
+            resume_reader = PdfReader("me/resume.pdf")
+            self.resume = ""
+            for page in resume_reader.pages:
+                text = page.extract_text()
+                if text:
+                    self.resume += text
+        except FileNotFoundError:
+            print("Warning: resume.pdf not found in me/ directory. Continuing without resume.")
+            self.resume = ""
+        
+        # Load summary
+        with open("me/summary.txt", "r", encoding="utf-8") as f:
+            self.summary = f.read()
+        
+        # Initialize Gemini for evaluation (optional - falls back to OpenAI if not available)
+        google_api_key = os.getenv('GOOGLE_API_KEY')
+        if google_api_key:
+            try:
+                self.gemini = OpenAI(
+                    api_key=google_api_key,
+                    base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
+                )
+                self.use_gemini_evaluator = True
+            except:
+                self.use_gemini_evaluator = False
+        else:
+            self.use_gemini_evaluator = False
+
+
+    def handle_tool_call(self, tool_calls):
+        results = []
+        for tool_call in tool_calls:
+            tool_name = tool_call.function.name
+            arguments = json.loads(tool_call.function.arguments)
+            print(f"Tool called: {tool_name}", flush=True)
+            tool = globals().get(tool_name)
+            result = tool(**arguments) if tool else {}
+            results.append({"role": "tool","content": json.dumps(result),"tool_call_id": tool_call.id})
+        return results
+    
+    def system_prompt(self):
+        system_prompt = f"You are acting as {self.name}. You are answering questions on {self.name}'s website, \
+particularly questions related to {self.name}'s career, background, skills and experience. \
+Your responsibility is to represent {self.name} for interactions on the website as faithfully as possible. \
+You are given a summary of {self.name}'s background, LinkedIn profile, and resume which you can use to answer questions. \
+Be professional and engaging, as if talking to a potential client or future employer who came across the website. \
+If you don't know the answer to any question, use your record_unknown_question tool to record the question that you couldn't answer, even if it's about something trivial or unrelated to career. \
+If the user is engaging in discussion, try to steer them towards getting in touch via email; ask for their email and record it using your record_user_details tool. "
+
+        system_prompt += f"\n\n## Summary:\n{self.summary}\n\n"
+        
+        if self.resume:
+            system_prompt += f"## Resume:\n{self.resume}\n\n"
+        
+        system_prompt += f"## LinkedIn Profile:\n{self.linkedin}\n\n"
+        system_prompt += f"With this context, please chat with the user, always staying in character as {self.name}."
+        return system_prompt
+    
+    def evaluator_system_prompt(self):
+        evaluator_prompt = f"You are an evaluator that decides whether a response to a question is acceptable. \
+You are provided with a conversation between a User and an Agent. Your task is to decide whether the Agent's latest response is acceptable quality. \
+The Agent is playing the role of {self.name} and is representing {self.name} on their website. \
+The Agent has been instructed to be professional and engaging, as if talking to a potential client or future employer who came across the website. \
+The Agent has been provided with context on {self.name} in the form of their summary, resume, and LinkedIn details. Here's the information:"
+        
+        evaluator_prompt += f"\n\n## Summary:\n{self.summary}\n\n"
+        
+        if self.resume:
+            evaluator_prompt += f"## Resume:\n{self.resume}\n\n"
+        
+        evaluator_prompt += f"## LinkedIn Profile:\n{self.linkedin}\n\n"
+        evaluator_prompt += f"With this context, please evaluate the latest response, replying with whether the response is acceptable and your feedback."
+        return evaluator_prompt
+    
+    def evaluator_user_prompt(self, reply, message, history):
+        # Convert history to readable format
+        history_text = ""
+        for msg in history:
+            role = msg.get("role", "unknown")
+            content = msg.get("content", "")
+            history_text += f"{role.capitalize()}: {content}\n\n"
+        
+        user_prompt = f"Here's the conversation between the User and the Agent:\n\n{history_text}\n\n"
+        user_prompt += f"Here's the latest message from the User:\n\n{message}\n\n"
+        user_prompt += f"Here's the latest response from the Agent:\n\n{reply}\n\n"
+        user_prompt += (
+            "Please evaluate the response, replying with whether it is acceptable and your feedback. "
+            "Respond ONLY with a JSON object in the following format: "
+            "{\"is_acceptable\": boolean, \"feedback\": string}. "
+            "Do not include any extra text outside this json."
+        )
+        return user_prompt
+
+    def log_evaluation(self, reply, message, history, evaluation: Evaluation, model: str):
+        """Log evaluation results to data/evaluations.jsonl for offline analysis."""
+        try:
+            data_dir = Path("data")
+            data_dir.mkdir(exist_ok=True)
+            log = {
+                "timestamp": datetime.now(timezone.utc).isoformat(),
+                "model": model,
+                "message": message,
+                "reply": reply,
+                "history": history,
+                "is_acceptable": evaluation.is_acceptable,
+                "feedback": evaluation.feedback,
+            }
+            with open(data_dir / "evaluations.jsonl", "a", encoding="utf-8") as f:
+                f.write(json.dumps(log) + "\n")
+        except Exception as e:
+            print(f"Failed to log evaluation: {e}", flush=True)
+    
+    def evaluate(self, reply, message, history) -> Evaluation:
+        """Evaluate a response using Gemini (or OpenAI if Gemini not available)"""
+        evaluator_sys_prompt = self.evaluator_system_prompt()
+        evaluator_user_prompt = self.evaluator_user_prompt(reply, message, history)
+        
+        messages = [
+            {"role": "system", "content": evaluator_sys_prompt},
+            {"role": "user", "content": evaluator_user_prompt}
+        ]
+        
+        if self.use_gemini_evaluator:
+            try:
+                # Use Gemini with structured output parsing
+                response = self.gemini.beta.chat.completions.parse(
+                    model="gemini-2.0-flash",
+                    messages=messages,
+                    response_format=Evaluation
+                )
+                evaluation = response.choices[0].message.parsed
+                self.log_evaluation(reply, message, history, evaluation, model="gemini-2.0-flash")
+                return evaluation
+            except Exception as e:
+                print(f"Gemini evaluation failed: {e}. Falling back to OpenAI.", flush=True)
+                # Fall through to OpenAI
+        
+        # Fallback to OpenAI with JSON mode
+        response = self.openai.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=messages,
+            response_format={"type": "json_object"}
+        )
+        result = json.loads(response.choices[0].message.content)
+        evaluation = Evaluation(**result)
+        self.log_evaluation(reply, message, history, evaluation, model="gpt-4o-mini")
+        return evaluation
+    
+    def rerun(self, reply, message, history, feedback):
+        """Retry generating a response after evaluation failure"""
+        updated_system_prompt = self.system_prompt()
+        updated_system_prompt += "\n\n## Previous answer rejected\nYou just tried to reply, but the quality control rejected your reply\n"
+        updated_system_prompt += f"## Your attempted answer:\n{reply}\n\n"
+        updated_system_prompt += f"## Reason for rejection:\n{feedback}\n\n"
+        updated_system_prompt += "Please provide a better response that addresses the feedback."
+        
+        messages = [{"role": "system", "content": updated_system_prompt}] + history + [{"role": "user", "content": message}]
+        done = False
+        while not done:
+            response = self.openai.chat.completions.create(model="gpt-4o-mini", messages=messages, tools=tools)
+            if response.choices[0].finish_reason=="tool_calls":
+                message_obj = response.choices[0].message
+                tool_calls = message_obj.tool_calls
+                results = self.handle_tool_call(tool_calls)
+                messages.append(message_obj)
+                messages.extend(results)
+            else:
+                done = True
+        return response.choices[0].message.content
+    
+    def chat(self, message, history):
+        # Clean up history format (in case Gradio adds extra fields)
+        history = [{"role": h.get("role", "user"), "content": h.get("content", "")} for h in history]
+        
+        # Generate initial response
+        messages = [{"role": "system", "content": self.system_prompt()}] + history + [{"role": "user", "content": message}]
+        done = False
+        while not done:
+            response = self.openai.chat.completions.create(model="gpt-4o-mini", messages=messages, tools=tools)
+            if response.choices[0].finish_reason=="tool_calls":
+                message_obj = response.choices[0].message
+                tool_calls = message_obj.tool_calls
+                results = self.handle_tool_call(tool_calls)
+                messages.append(message_obj)
+                messages.extend(results)
+            else:
+                done = True
+        
+        reply = response.choices[0].message.content
+        
+        # Evaluate the response
+        evaluation = self.evaluate(reply, message, history)
+        
+        if evaluation.is_acceptable:
+            print("✓ Passed evaluation - returning reply", flush=True)
+            return reply
+        else:
+            print(f"✗ Failed evaluation - retrying\nFeedback: {evaluation.feedback}", flush=True)
+            # Retry with feedback
+            reply = self.rerun(reply, message, history, evaluation.feedback)
+            return reply
+    
+
+if __name__ == "__main__":
+    me = Me()
+
+    # Create a short version of the summary for the sidebar
+    short_summary = (me.summary or "").strip()
+    if len(short_summary) > 600:
+        short_summary = short_summary[:600]
+        last_space = short_summary.rfind(" ")
+        if last_space != -1:
+            short_summary = short_summary[:last_space]
+        short_summary += "…"
+
+    examples = [
+        "What kinds of roles are you interested in after TLDP?",
+        "Tell me about a data science project you're proud of.",
+        "What kind of problems do you enjoy solving?",
+        "What tools and technologies do you use most often?",
+    ]
+
+    with gr.Blocks() as demo:
+        gr.Markdown(f"# Chat with {me.name}")
+        gr.Markdown(
+            "I’m an AI version of Giovanni, a Data Scientist and TLDP analyst at Johnson & Johnson. "
+            "Ask me about my experience, projects, and what I’m looking for next."
+        )
+
+        with gr.Row():
+            with gr.Column(scale=1):
+                gr.Markdown("### About Giovanni")
+                if short_summary:
+                    gr.Markdown(short_summary)
+                else:
+                    gr.Markdown("Data Scientist and TLDP analyst interested in applied ML, analytics, and AI.")
+
+                gr.Markdown("### Stay in touch")
+                gr.Markdown("_I’ll only use this to follow up about roles or collaborations — no spam._")
+                email_box = gr.Textbox(label="Email", placeholder="you@example.com")
+                name_box = gr.Textbox(label="Name (optional)")
+                notes_box = gr.Textbox(
+                    label="Notes (optional)",
+                    lines=2,
+                    placeholder="What would you like to talk about?",
+                )
+                email_status = gr.Markdown("")
+                submit_email_btn = gr.Button("Send contact info")
+
+            with gr.Column(scale=2):
+                gr.ChatInterface(
+                    me.chat,
+                    type="messages",
+                    examples=examples,
+                    title="Giovanni (AI)",
+                    description="Ask about my experience, skills, projects, and interests.",
+                )
+
+        submit_email_btn.click(
+            fn=record_user_details_ui,
+            inputs=[email_box, name_box, notes_box],
+            outputs=[email_status],
+        )
+
+        gr.Markdown(
+            "_Powered by OpenAI and Gradio · This is an AI representation of Giovanni, not live human chat._"
+        )
+
+    demo.launch()
