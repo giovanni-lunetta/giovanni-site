@@ -325,15 +325,6 @@ The Agent has been provided with context on {self.name} in the form of their sum
 if __name__ == "__main__":
     me = Me()
 
-    # Create a short version of the summary for the sidebar
-    short_summary = (me.summary or "").strip()
-    if len(short_summary) > 600:
-        short_summary = short_summary[:600]
-        last_space = short_summary.rfind(" ")
-        if last_space != -1:
-            short_summary = short_summary[:last_space]
-        short_summary += "…"
-
     examples = [
         "What kinds of roles are you interested in after TLDP?",
         "Tell me about a data science project you're proud of.",
@@ -350,12 +341,6 @@ if __name__ == "__main__":
 
         with gr.Row():
             with gr.Column(scale=1):
-                gr.Markdown("### About Giovanni")
-                if short_summary:
-                    gr.Markdown(short_summary)
-                else:
-                    gr.Markdown("Data Scientist and TLDP analyst interested in applied ML, analytics, and AI.")
-
                 gr.Markdown("### Stay in touch")
                 gr.Markdown("_I’ll only use this to follow up about roles or collaborations — no spam._")
                 email_box = gr.Textbox(label="Email", placeholder="you@example.com")
