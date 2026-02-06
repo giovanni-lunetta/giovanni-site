@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Hobbies – Giovanni Lunetta</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+
+<body>
+  <header class="site-header">
+    <div class="container header-content">
+      <div class="logo">GL</div>
+      <button class="nav-toggle" aria-label="Toggle navigation menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav class="nav">
+        <a href="index.html" class="nav-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          Home
+        </a>
+        <a href="index.html#projects" class="nav-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+          </svg>
+          Projects
+        </a>
+        <a href="hobbies.html" class="nav-link active">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z"></path>
+            <path d="M19 13l.75 2.25L22 16l-2.25.75L19 19l-.75-2.25L16 16l2.25-.75L19 13z"></path>
+          </svg>
+          Hobbies
+        </a>
+        <a href="chat.html" class="nav-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          </svg>
+          Chat
+        </a>
+        <a href="resume.html" class="nav-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+            <polyline points="10 9 9 9 8 9"></polyline>
+          </svg>
+          Resume
+        </a>
+        <a href="https://www.linkedin.com/in/giovanni-lunetta/" class="nav-link" target="_blank" rel="noopener noreferrer">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+            <rect x="2" y="9" width="4" height="12"></rect>
+            <circle cx="4" cy="4" r="2"></circle>
+          </svg>
+          LinkedIn
+        </a>
+        <a href="https://medium.com/@giovannilunetta" class="nav-link" target="_blank" rel="noopener noreferrer">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M9.025 8c0 2.485-2.02 4.5-4.513 4.5A4.506 4.506 0 0 1 0 8c0-2.486 2.02-4.5 4.512-4.5A4.506 4.506 0 0 1 9.025 8m4.95 0c0 2.34-1.01 4.236-2.256 4.236S9.463 10.339 9.463 8c0-2.34 1.01-4.236 2.256-4.236S13.975 5.661 13.975 8M16 8c0 2.096-.355 3.795-.794 3.795-.438 0-.793-1.7-.793-3.795 0-2.096.355-3.795.794-3.795.438 0 .793 1.699.793 3.795" />
+          </svg>
+          Medium
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hobby-hero">
+      <div class="container">
+        <div class="animate-fade-in">
+          <h1>Beyond the Data</h1>
+          <p class="hero-subtitle">
+            When I'm not building AI solutions, here's what fuels my energy.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <h2 class="animate-slide-up delay-100">Featured Projects</h2>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 1.5rem; margin-top: 2rem;">
+          <!-- MemSavr Card -->
+          <article class="card animate-slide-up delay-200" style="display: flex; flex-direction: column;">
+            <div style="margin-bottom: 1rem;">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent);">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                <circle cx="12" cy="13" r="4"></circle>
+              </svg>
+            </div>
+            <h3>MemSavr</h3>
+            <p>
+              A macOS app I built to export Snapchat Memories while preserving the correct metadata — dates, timestamps, and all. Born out of personal frustration, built with care.
+            </p>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0;">
+              <span class="tag">macOS App</span>
+              <span class="tag">Creator Project</span>
+              <span class="tag">Shipped Product</span>
+            </div>
+            <a href="https://savemymemories.app/" target="_blank" rel="noopener noreferrer" class="external-link-btn" style="margin-top: auto;">
+              Visit savemymemories.app →
+            </a>
+          </article>
+
+          <!-- Pokémon Collection Card -->
+          <article class="card animate-slide-up delay-300" style="display: flex; flex-direction: column;">
+            <div style="margin-bottom: 1rem;">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent);">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+              </svg>
+            </div>
+            <h3>Pokémon Card Collection</h3>
+            <p>
+              I'm a serious Pokémon card collector with a growing collection that I'm genuinely proud of. It's part nostalgia, part community, part the thrill of the hunt.
+            </p>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 1rem 0;">
+              <span class="tag">Collector</span>
+              <span class="tag">Community</span>
+              <span class="tag">Passion</span>
+            </div>
+            <a href="https://app.getcollectr.com/showcase/profile/6b1e7a85-3024-42e9-ad7a-bba4588ddb81" target="_blank" rel="noopener noreferrer" class="external-link-btn" style="margin-top: auto;">
+              View my collection →
+            </a>
+          </article>
+        </div>
+
+        <div class="section-divider"></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <h2 class="animate-slide-up delay-100">Other Interests</h2>
+
+        <div class="hobby-grid">
+          <!-- Health & Fitness -->
+          <article class="hobby-card animate-slide-up delay-200">
+            <div style="margin-bottom: 1rem;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent);">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"></path>
+              </svg>
+            </div>
+            <h3>Health & Fitness</h3>
+            <p>
+              Consistent gym routine that's equal parts stress relief and enjoyment. Training keeps me grounded and energized.
+            </p>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem;">
+              <span class="tag">Daily Routine</span>
+              <span class="tag">Wellness</span>
+            </div>
+          </article>
+
+          <!-- Sports -->
+          <article class="hobby-card animate-slide-up delay-200">
+            <div style="margin-bottom: 1rem;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent);">
+                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5C7 4 9 8 12 8s5-4 7.5-4a2.5 2.5 0 0 1 0 5H18"></path>
+                <path d="M18 9v10a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V9"></path>
+                <path d="M12 8v13"></path>
+              </svg>
+            </div>
+            <h3>Sports</h3>
+            <p>
+              Die-hard New York Knicks fan, proud UConn Huskies supporter, and all-around football and basketball enthusiast.
+            </p>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem;">
+              <span class="tag">Knicks</span>
+              <span class="tag">UConn</span>
+              <span class="tag">Basketball</span>
+              <span class="tag">Football</span>
+            </div>
+          </article>
+
+          <!-- Gaming -->
+          <article class="hobby-card animate-slide-up delay-300">
+            <div style="margin-bottom: 1rem;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent);">
+                <line x1="6" y1="12" x2="10" y2="12"></line>
+                <line x1="8" y1="10" x2="8" y2="14"></line>
+                <line x1="15" y1="13" x2="15.01" y2="13"></line>
+                <line x1="18" y1="11" x2="18.01" y2="11"></line>
+                <rect x="2" y="6" width="20" height="12" rx="2"></rect>
+              </svg>
+            </div>
+            <h3>Gaming</h3>
+            <p>
+              Fortnite for the competition, Clash of Clans and Clash Royale for the strategy and progression. Always looking for the next challenge.
+            </p>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem;">
+              <span class="tag">Fortnite</span>
+              <span class="tag">Clash</span>
+              <span class="tag">Competition</span>
+            </div>
+          </article>
+
+          <!-- AI & Technology -->
+          <article class="hobby-card animate-slide-up delay-300">
+            <div style="margin-bottom: 1rem;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent);">
+                <rect x="4" y="4" width="16" height="16" rx="2"></rect>
+                <rect x="9" y="9" width="6" height="6"></rect>
+                <line x1="9" y1="1" x2="9" y2="4"></line>
+                <line x1="15" y1="1" x2="15" y2="4"></line>
+                <line x1="9" y1="20" x2="9" y2="23"></line>
+                <line x1="15" y1="20" x2="15" y2="23"></line>
+                <line x1="20" y1="9" x2="23" y2="9"></line>
+                <line x1="20" y1="14" x2="23" y2="14"></line>
+                <line x1="1" y1="9" x2="4" y2="9"></line>
+                <line x1="1" y1="14" x2="4" y2="14"></line>
+              </svg>
+            </div>
+            <h3>AI & Technology</h3>
+            <p>
+              Beyond work, I'm genuinely fascinated by AI developments and love finding ways to apply them in everyday life and teach others.
+            </p>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem;">
+              <span class="tag">AI</span>
+              <span class="tag">Learning</span>
+              <span class="tag">Teaching</span>
+            </div>
+          </article>
+
+          <!-- Travel -->
+          <article class="hobby-card animate-slide-up delay-400">
+            <div style="margin-bottom: 1rem;">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent);">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="2" y1="12" x2="22" y2="12"></line>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+              </svg>
+            </div>
+            <h3>Travel Planning</h3>
+            <p>
+              I love the research and logistics side of travel — planning Europe trips has been a major theme lately, especially Ireland and Italy.
+            </p>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem;">
+              <span class="tag">Europe</span>
+              <span class="tag">Adventure</span>
+            </div>
+          </article>
+        </div>
+
+        <div class="section-divider"></div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="animate-slide-up delay-100" style="text-align: center; padding: 2rem; background: rgba(245, 158, 11, 0.05); border-radius: var(--radius); border: 1px solid rgba(245, 158, 11, 0.2);">
+          <h2 style="margin-bottom: 1rem;">Want to know more about any of this?</h2>
+          <p style="margin-bottom: 1.5rem; opacity: 0.9;">
+            Ask the AI version of me. I can dive deeper into any hobby, project, or passion.
+          </p>
+          <a href="chat.html" class="button primary" style="display: inline-flex; align-items: center; justify-content: center; gap: var(--spacing-sm);">
+            Chat with my AI twin
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-content">
+      <p>© <span id="year"></span> Giovanni Lunetta</p>
+      <p class="footer-note">
+        Built as a lightweight personal site. The chat experience is powered by Hugging Face Spaces and OpenAI.
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    // Set year dynamically
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    // Mobile nav toggle
+    document.querySelector('.nav-toggle').addEventListener('click', () => {
+      document.querySelector('.nav').classList.toggle('open');
+    });
+
+    // Close nav when a link is clicked
+    const navLinks = document.querySelectorAll('.nav-link');
+    navLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        document.querySelector('.nav').classList.remove('open');
+      });
+    });
+  </script>
+</body>
+
+</html>
