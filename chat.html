@@ -12,6 +12,11 @@
   <header class="site-header">
     <div class="container header-content">
       <div class="logo">GL</div>
+      <button class="nav-toggle" aria-label="Toggle navigation menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
       <nav class="nav">
         <a href="index.html" class="nav-link">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -27,6 +32,14 @@
             <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
           </svg>
           Projects
+        </a>
+        <a href="hobbies.html" class="nav-link">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z"></path>
+            <path d="M19 13l.75 2.25L22 16l-2.25.75L19 19l-.75-2.25L16 16l2.25-.75L19 13z"></path>
+          </svg>
+          Hobbies
         </a>
         <a href="chat.html" class="nav-link active">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -46,7 +59,7 @@
           </svg>
           Resume
         </a>
-        <a href="https://www.linkedin.com/in/giovanni-lunetta/" class="nav-link" target="_blank">
+        <a href="https://www.linkedin.com/in/giovanni-lunetta/" class="nav-link" target="_blank" rel="noopener noreferrer">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round">
             <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
@@ -55,7 +68,7 @@
           </svg>
           LinkedIn
         </a>
-        <a href="https://medium.com/@giovannilunetta" class="nav-link" target="_blank">
+        <a href="https://medium.com/@giovannilunetta" class="nav-link" target="_blank" rel="noopener noreferrer">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
             <path
               d="M9.025 8c0 2.485-2.02 4.5-4.513 4.5A4.506 4.506 0 0 1 0 8c0-2.486 2.02-4.5 4.512-4.5A4.506 4.506 0 0 1 9.025 8m4.95 0c0 2.34-1.01 4.236-2.256 4.236S9.463 10.339 9.463 8c0-2.34 1.01-4.236 2.256-4.236S13.975 5.661 13.975 8M16 8c0 2.096-.355 3.795-.794 3.795-.438 0-.793-1.7-.793-3.795 0-2.096.355-3.795.794-3.795.438 0 .793 1.699.793 3.795" />
@@ -72,8 +85,7 @@
         <div class="animate-fade-in">
           <h1>Chat with Giovanni (AI)</h1>
           <p class="hero-subtitle">
-            This is an AI version of me, running on Hugging Face Spaces. Ask about my background, TLDP experience,
-            projects, skills, or what I’m looking for in my next role.
+            This is an AI version of me, running on Hugging Face Spaces. Ask about my background, TLDP experience, projects, skills, hobbies, or what I'm looking for in my next role.
           </p>
         </div>
 
@@ -83,8 +95,7 @@
         </div>
 
         <p class="section-note animate-slide-up delay-300">
-          Note: This chatbot reflects my real experience and interests, but it’s still AI. If you’d like to talk
-          directly, feel free to reach out via email or LinkedIn.
+          Note: This chatbot reflects my real experience and interests, but it's still AI. If you'd like to talk directly, feel free to reach out via email or LinkedIn.
         </p>
       </div>
     </section>
@@ -100,7 +111,21 @@
   </footer>
 
   <script>
+    // Set dynamic year
     document.getElementById("year").textContent = new Date().getFullYear();
+
+    // Mobile nav toggle
+    document.querySelector('.nav-toggle').addEventListener('click', () => {
+      document.querySelector('.nav').classList.toggle('open');
+    });
+
+    // Close nav when a link is clicked
+    const navLinks = document.querySelectorAll('.nav-link');
+    navLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        document.querySelector('.nav').classList.remove('open');
+      });
+    });
   </script>
 </body>
 
