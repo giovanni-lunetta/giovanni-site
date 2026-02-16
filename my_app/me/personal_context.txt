@@ -1,10 +1,10 @@
 PERSONAL CONTEXT — GIOVANNI LUNETTA (Master Profile)
 
 OVERVIEW
-Giovanni Lunetta is an extroverted, high-energy, growth-driven creator/competitor who blends ambition with warmth and strong faith. He is heavily integrated into using AI in both his work and his day-to-day life. He is motivated by building useful things, optimizing how work gets done, and helping other people improve. He values being God-fearing and loving, and he recharges through faith practices, connection with loved ones (especially Alyssa), and consistent training in the gym.
+Giovanni Lunetta is an extroverted, high-energy, growth-driven creator/competitor who blends ambition with warmth and strong faith. He is heavily integrated into using AI in both his work and his day-to-day life. He is motivated by building useful things, optimizing how work gets done, and helping other people improve. He values being God-fearing and loving, and he recharges through faith practices, connection with loved ones (especially his girlfriend), and consistent training in the gym.
 
 LOCATION / LIFE CONTEXT
-- Lives in northern New Jersey (Pequannock / Pompton Plains area).
+- Lives in northern New Jersey.
 - Education: undergraduate degree in statistics and political science with a minor in mathematics, plus a master’s degree in data science (University of Connecticut).
 - Current phase of life: building skills, credibility, and a strong personal brand while also prioritizing relationships, hobbies, faith, and health.
 
@@ -20,7 +20,7 @@ AI INTEGRATION (WORK + DAILY LIFE)
 - Values turning modern AI tools into teachable, repeatable workflows that other people can confidently use.
 
 PERSONAL PRODUCT / BUILDER IDENTITY (NON-WORK)
-- MemSavr (Personal Project): Giovanni created MemSavr, a macOS app designed to export Snapchat Memories while preserving correct metadata (so exports keep accurate information such as dates/timestamps rather than becoming disorganized or incorrect). This is a major personal project that he invested substantial time into and considers important to his identity as a creator and builder. It reflects his attention to detail, love of shipping real products, and interest in user-facing solutions.
+- DateBack (Personal Project): Giovanni created DateBack, a macOS app designed to export Snapchat Memories while preserving correct metadata (so exports keep accurate information such as dates/timestamps rather than becoming disorganized or incorrect). This is a major personal project that he invested substantial time into and considers important to his identity as a creator and builder. It reflects his attention to detail, love of shipping real products, and interest in user-facing solutions.
 
 PERSONALITY & ENERGY DRIVERS
 - Social battery: extrovert; energized by people, conversation, connection, and shared experiences.
@@ -34,13 +34,13 @@ PERSONALITY & ENERGY DRIVERS
 VALUES & CHARACTER
 - Core values he wants close friends to describe him with: God-fearing, Loving.
 - Faith is not surface-level; Giovanni reflects deeply on integrity, identity, and alignment with God (including how perception, control, and temptation can affect his life and focus).
-- Recharging and grounding practices: reading the Bible, talking to God, talking with Alyssa, and working out (especially for stress management).
+- Recharging and grounding practices: reading the Bible, talking to God, talking with his girlfriend, and working out (especially for stress management).
 
 WHAT HE LOOKS FORWARD TO WEEK-TO-WEEK (FREE TIME)
 - Going to the gym / health & fitness training.
 - Watching sports.
 - Eating / enjoying food.
-- Hanging out with Alyssa (girlfriend).
+- Hanging out with his girlfriend.
 - Seeing friends.
 - Talking to his brother.
 - Gaming: Fortnite, Clash of Clans, Clash Royale.
@@ -55,7 +55,7 @@ MAJOR HOBBIES & INTERESTS
 - Travel & planning: enjoys researching and planning travel logistics, especially Europe trips (Ireland/Italy planning has been a major theme).
 
 RELATIONSHIPS & COMMUNITY
-- Relationship: Alyssa is his girlfriend; spending time with her is a major source of joy and emotional recharge.
+- Relationship: has a girlfriend; spending time with her is a major source of joy and emotional recharge.
 - Family: values connection with family and especially enjoys talking with his brother.
 - Communities he identifies with:
   - Church community
@@ -74,4 +74,4 @@ PERSONAL BRAND & WEBSITE VIBE
 - He wants to showcase not only skills, but also how he thinks, builds, learns, and teaches—while making his human identity visible (faith, fitness, sports, gaming, collecting, relationships, community).
 
 THROUGH-LINE SUMMARY
-Giovanni is a builder-competitor grounded in faith and fueled by connection and growth. He integrates AI into both work and life, aims to become a recognized AI expert and teacher, and balances ambition with enjoyment through fitness, sports, gaming, travel planning, and a deep passion for Pokémon collecting. He also demonstrates his creator identity through MemSavr, a macOS app he built to export Snapchat Memories while preserving correct metadata.
+Giovanni is a builder-competitor grounded in faith and fueled by connection and growth. He integrates AI into both work and life, aims to become a recognized AI expert and teacher, and balances ambition with enjoyment through fitness, sports, gaming, travel planning, and a deep passion for Pokémon collecting. He also demonstrates his creator identity through DateBack, a macOS app he built to export Snapchat Memories while preserving correct metadata.

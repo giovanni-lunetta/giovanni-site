@@ -3,7 +3,6 @@ from openai import OpenAI
 import json
 import os
 import requests
-from pypdf import PdfReader
 import gradio as gr
 from pydantic import BaseModel
 from pathlib import Path
@@ -13,30 +12,23 @@ from datetime import datetime, timezone
 load_dotenv(override=True)
 
 def push(text):
-    requests.post(
-        "https://api.pushover.net/1/messages.json",
-        data={
-            "token": os.getenv("PUSHOVER_TOKEN"),
-            "user": os.getenv("PUSHOVER_USER"),
-            "message": text,
-        }
-    )
+    try:
+        requests.post(
+            "https://api.pushover.net/1/messages.json",
+            data={
+                "token": os.getenv("PUSHOVER_TOKEN"),
+                "user": os.getenv("PUSHOVER_USER"),
+                "message": text,
+            },
+            timeout=10,
+        )
+    except Exception as e:
+        print(f"Pushover notification failed: {e}", flush=True)
 
 
 def record_user_details(email, name="Name not provided", notes="not provided"):
     push(f"Recording {name} with email {email} and notes {notes}")
     return {"recorded": "ok"}
-
-def record_user_details_ui(email, name="Name not provided", notes="not provided"):
-    email = (email or "").strip()
-    name = (name or "").strip() or "Name not provided"
-    notes = (notes or "").strip() or "not provided"
-
-    if not email or "@" not in email:
-        return "⚠️ Please enter a valid email address."
-
-    record_user_details(email=email, name=name, notes=notes)
-    return "✅ Thanks! Your details have been recorded."
 
 def record_unknown_question(question):
     push(f"Recording {question}")
@@ -106,28 +98,32 @@ class Evaluation(BaseModel):
 class Me:
 
     def __init__(self):
+        # Verify API key is available
+        if not os.getenv("OPENAI_API_KEY"):
+            raise EnvironmentError("OPENAI_API_KEY environment variable is not set. Please add it to your .env file.")
+        
         self.openai = OpenAI()
         self.name = "Giovanni Lunetta"
         
         # Load LinkedIn profile
-        reader = PdfReader("me/linkedin.pdf")
-        self.linkedin = ""
-        for page in reader.pages:
-            text = page.extract_text()
-            if text:
-                self.linkedin += text
+        with open("me/linkedin.txt", "r", encoding="utf-8") as f:
+            self.linkedin = f.read()
         
         # Load Resume
         try:
-            resume_reader = PdfReader("me/resume.pdf")
-            self.resume = ""
-            for page in resume_reader.pages:
-                text = page.extract_text()
-                if text:
-                    self.resume += text
+            with open("me/resume.txt", "r", encoding="utf-8") as f:
+                self.resume = f.read()
         except FileNotFoundError:
-            print("Warning: resume.pdf not found in me/ directory. Continuing without resume.")
+            print("Warning: resume.txt not found in me/ directory. Continuing without resume.")
             self.resume = ""
+        
+        # Load personal context
+        try:
+            with open("me/personal_context.txt", "r", encoding="utf-8") as f:
+                self.personal_context = f.read()
+        except FileNotFoundError:
+            print("Warning: personal_context.txt not found in me/ directory. Continuing without personal context.")
+            self.personal_context = ""
         
         # Load summary
         with open("me/summary.txt", "r", encoding="utf-8") as f:
@@ -142,11 +138,17 @@ class Me:
                     base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
                 )
                 self.use_gemini_evaluator = True
-            except:
+            except Exception:
                 self.use_gemini_evaluator = False
         else:
             self.use_gemini_evaluator = False
 
+
+    # Whitelist of allowed tool functions to prevent arbitrary code execution
+    ALLOWED_TOOLS = {
+        "record_user_details": record_user_details,
+        "record_unknown_question": record_unknown_question,
+    }
 
     def handle_tool_call(self, tool_calls):
         results = []
@@ -154,21 +156,28 @@ class Me:
             tool_name = tool_call.function.name
             arguments = json.loads(tool_call.function.arguments)
             print(f"Tool called: {tool_name}", flush=True)
-            tool = globals().get(tool_name)
-            result = tool(**arguments) if tool else {}
-            results.append({"role": "tool","content": json.dumps(result),"tool_call_id": tool_call.id})
+            tool = self.ALLOWED_TOOLS.get(tool_name)
+            if tool is None:
+                print(f"WARNING: Unknown tool requested: {tool_name}", flush=True)
+                result = {"error": f"Unknown tool: {tool_name}"}
+            else:
+                result = tool(**arguments)
+            results.append({"role": "tool", "content": json.dumps(result), "tool_call_id": tool_call.id})
         return results
     
     def system_prompt(self):
         system_prompt = f"You are acting as {self.name}. You are answering questions on {self.name}'s website, \
 particularly questions related to {self.name}'s career, background, skills and experience. \
 Your responsibility is to represent {self.name} for interactions on the website as faithfully as possible. \
-You are given a summary of {self.name}'s background, LinkedIn profile, and resume which you can use to answer questions. \
+You are given a summary of {self.name}'s background, personal context, LinkedIn profile, and resume which you can use to answer questions. \
 Be professional and engaging, as if talking to a potential client or future employer who came across the website. \
 If you don't know the answer to any question, use your record_unknown_question tool to record the question that you couldn't answer, even if it's about something trivial or unrelated to career. \
 If the user is engaging in discussion, try to steer them towards getting in touch via email; ask for their email and record it using your record_user_details tool. "
 
         system_prompt += f"\n\n## Summary:\n{self.summary}\n\n"
+        
+        if self.personal_context:
+            system_prompt += f"## Personal Context:\n{self.personal_context}\n\n"
         
         if self.resume:
             system_prompt += f"## Resume:\n{self.resume}\n\n"
@@ -182,9 +191,12 @@ If the user is engaging in discussion, try to steer them towards getting in touc
 You are provided with a conversation between a User and an Agent. Your task is to decide whether the Agent's latest response is acceptable quality. \
 The Agent is playing the role of {self.name} and is representing {self.name} on their website. \
 The Agent has been instructed to be professional and engaging, as if talking to a potential client or future employer who came across the website. \
-The Agent has been provided with context on {self.name} in the form of their summary, resume, and LinkedIn details. Here's the information:"
+The Agent has been provided with context on {self.name} in the form of their summary, personal context, resume, and LinkedIn details. Here's the information:"
         
         evaluator_prompt += f"\n\n## Summary:\n{self.summary}\n\n"
+        
+        if self.personal_context:
+            evaluator_prompt += f"## Personal Context:\n{self.personal_context}\n\n"
         
         if self.resume:
             evaluator_prompt += f"## Resume:\n{self.resume}\n\n"
@@ -262,8 +274,12 @@ The Agent has been provided with context on {self.name} in the form of their sum
             messages=messages,
             response_format={"type": "json_object"}
         )
-        result = json.loads(response.choices[0].message.content)
-        evaluation = Evaluation(**result)
+        try:
+            result = json.loads(response.choices[0].message.content)
+            evaluation = Evaluation(**result)
+        except (json.JSONDecodeError, TypeError, KeyError) as e:
+            print(f"Failed to parse OpenAI evaluation response: {e}", flush=True)
+            evaluation = Evaluation(is_acceptable=True, feedback="Evaluation parse error; accepted by default.")
         self.log_evaluation(reply, message, history, evaluation, model="gpt-4o-mini")
         return evaluation
     
@@ -276,36 +292,36 @@ The Agent has been provided with context on {self.name} in the form of their sum
         updated_system_prompt += "Please provide a better response that addresses the feedback."
         
         messages = [{"role": "system", "content": updated_system_prompt}] + history + [{"role": "user", "content": message}]
-        done = False
-        while not done:
+        for _ in range(self.MAX_TOOL_ITERATIONS):
             response = self.openai.chat.completions.create(model="gpt-4o-mini", messages=messages, tools=tools)
-            if response.choices[0].finish_reason=="tool_calls":
+            if response.choices[0].finish_reason == "tool_calls":
                 message_obj = response.choices[0].message
                 tool_calls = message_obj.tool_calls
                 results = self.handle_tool_call(tool_calls)
                 messages.append(message_obj)
                 messages.extend(results)
             else:
-                done = True
+                break
         return response.choices[0].message.content
     
+    MAX_TOOL_ITERATIONS = 10
+
     def chat(self, message, history):
         # Clean up history format (in case Gradio adds extra fields)
         history = [{"role": h.get("role", "user"), "content": h.get("content", "")} for h in history]
         
         # Generate initial response
         messages = [{"role": "system", "content": self.system_prompt()}] + history + [{"role": "user", "content": message}]
-        done = False
-        while not done:
+        for _ in range(self.MAX_TOOL_ITERATIONS):
             response = self.openai.chat.completions.create(model="gpt-4o-mini", messages=messages, tools=tools)
-            if response.choices[0].finish_reason=="tool_calls":
+            if response.choices[0].finish_reason == "tool_calls":
                 message_obj = response.choices[0].message
                 tool_calls = message_obj.tool_calls
                 results = self.handle_tool_call(tool_calls)
                 messages.append(message_obj)
                 messages.extend(results)
             else:
-                done = True
+                break
         
         reply = response.choices[0].message.content
         
@@ -332,44 +348,159 @@ if __name__ == "__main__":
         "What tools and technologies do you use most often?",
     ]
 
-    with gr.Blocks() as demo:
+    # Custom CSS to match the website's Cobalt sky theme
+    custom_css = """
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    .gradio-container {
+        background: linear-gradient(135deg, #1a1f2e 0%, #0f1419 100%) !important;
+        font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+    }
+
+    .contain {
+        max-width: 900px !important;
+        margin: 0 auto !important;
+    }
+
+    /* Main title */
+    .gradio-container h1 {
+        color: #ffffff !important;
+        text-align: center !important;
+        font-size: 2.5rem !important;
+        font-weight: 700 !important;
+        text-shadow: 0 0 20px rgba(130, 200, 229, 0.3);
+        margin-bottom: 0.25rem !important;
+    }
+
+    /* All headings inherit theme colors */
+    .gradio-container h2, .gradio-container h3 {
+        color: #ffffff !important;
+    }
+
+    /* Markdown text */
+    .gradio-container .markdown {
+        color: #c8dce8 !important;
+    }
+
+    /* Subtitle styling */
+    .subtitle {
+        text-align: center !important;
+        font-size: 1.05rem !important;
+        color: #6D8196 !important;
+        margin-bottom: 1.5rem !important;
+    }
+
+    /* Hide the "Chatbot" tab label */
+    .tabs, .tab-nav {
+        display: none !important;
+    }
+
+    /* Chat area */
+    .chatbot {
+        background: #2a3142 !important;
+        border: 1px solid rgba(130, 200, 229, 0.2) !important;
+        border-radius: 12px !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
+        min-height: 400px !important;
+    }
+
+    /* User messages */
+    .message.user {
+        background: linear-gradient(135deg, #0047AB 0%, #003080 100%) !important;
+        border-radius: 12px !important;
+    }
+
+    /* Bot messages */
+    .message.bot {
+        background: #353d52 !important;
+        border: 1px solid rgba(130, 200, 229, 0.15) !important;
+        border-radius: 12px !important;
+    }
+
+    /* Input area */
+    textarea, input {
+        background: #2a3142 !important;
+        border: 2px solid rgba(130, 200, 229, 0.3) !important;
+        color: #ffffff !important;
+        border-radius: 8px !important;
+        transition: all 0.3s ease !important;
+    }
+
+    textarea:focus, input:focus {
+        border-color: #82C8E5 !important;
+        box-shadow: 0 0 15px rgba(130, 200, 229, 0.3) !important;
+        outline: none !important;
+    }
+
+    textarea::placeholder {
+        color: #6D8196 !important;
+    }
+
+    /* Send button */
+    button.primary, button[class*="submit"] {
+        background: linear-gradient(135deg, #0047AB 0%, #003080 100%) !important;
+        color: #ffffff !important;
+        border: none !important;
+        border-radius: 8px !important;
+        font-weight: 500 !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 2px 10px rgba(0, 71, 171, 0.3) !important;
+    }
+
+    button.primary:hover, button[class*="submit"]:hover {
+        transform: translateY(-1px) !important;
+        box-shadow: 0 4px 20px rgba(130, 200, 229, 0.4) !important;
+    }
+
+    /* Example prompt buttons */
+    .examples button {
+        background: #2a3142 !important;
+        border: 1px solid rgba(130, 200, 229, 0.25) !important;
+        color: #82C8E5 !important;
+        border-radius: 8px !important;
+        font-size: 0.9rem !important;
+        transition: all 0.25s ease !important;
+    }
+
+    .examples button:hover {
+        border-color: #82C8E5 !important;
+        background: rgba(130, 200, 229, 0.08) !important;
+        transform: translateY(-1px) !important;
+    }
+
+    /* Footer */
+    .footer-note {
+        text-align: center !important;
+        font-size: 0.85rem !important;
+        opacity: 0.6;
+        margin-top: 2rem !important;
+        color: #6D8196 !important;
+    }
+
+    /* Labels */
+    label, .label-wrap {
+        color: #c8dce8 !important;
+    }
+    """
+
+    with gr.Blocks(css=custom_css, theme=gr.themes.Base()) as demo:
         gr.Markdown(f"# Chat with {me.name}")
         gr.Markdown(
-            "I’m an AI version of Giovanni, a Data Scientist and TLDP analyst at Johnson & Johnson. "
-            "Ask me about my experience, projects, and what I’m looking for next."
+            "I'm an AI version of Giovanni, a Data Scientist and TLDP analyst at Johnson & Johnson. "
+            "Ask me about my experience, projects, and what I'm looking for next.",
+            elem_classes="subtitle"
         )
 
-        with gr.Row():
-            with gr.Column(scale=1):
-                gr.Markdown("### Stay in touch")
-                gr.Markdown("_I’ll only use this to follow up about roles or collaborations — no spam._")
-                email_box = gr.Textbox(label="Email", placeholder="you@example.com")
-                name_box = gr.Textbox(label="Name (optional)")
-                notes_box = gr.Textbox(
-                    label="Notes (optional)",
-                    lines=2,
-                    placeholder="What would you like to talk about?",
-                )
-                email_status = gr.Markdown("")
-                submit_email_btn = gr.Button("Send contact info")
+        gr.ChatInterface(
+            me.chat,
+            type="messages",
+            examples=examples,
 
-            with gr.Column(scale=2):
-                gr.ChatInterface(
-                    me.chat,
-                    type="messages",
-                    examples=examples,
-                    title="Giovanni (AI)",
-                    description="Ask about my experience, skills, projects, and interests.",
-                )
-
-        submit_email_btn.click(
-            fn=record_user_details_ui,
-            inputs=[email_box, name_box, notes_box],
-            outputs=[email_status],
         )
 
         gr.Markdown(
-            "_Powered by OpenAI and Gradio · This is an AI representation of Giovanni, not live human chat._"
+            "_Powered by OpenAI and Gradio \u00b7 This is an AI representation of Giovanni, not live human chat._",
+            elem_classes="footer-note"
         )
 
     demo.launch()
