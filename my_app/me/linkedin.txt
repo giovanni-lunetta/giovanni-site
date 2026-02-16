@@ -32,7 +32,7 @@ unsupervised preference modeling for surgical workflows, enterprise
 AWS cost optimization, and ML pipeline validation at scale. I care
 about shipping things that get adopted, not just built.
 Outside of work, I build too: giovannilunetta.com runs a self-
-evaluating dual-LLM system I architected, and MemSavr is a macOS
+evaluating dual-LLM system I architected, and DateBack is a macOS
 app I shipped with Apple code signing. M.S. in Data Science from
 UConn.
 Always happy to connect with people working on applied AI — let's
