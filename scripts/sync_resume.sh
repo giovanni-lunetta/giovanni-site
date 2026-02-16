@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# Define paths
-SOURCE="my_app/me/resume.pdf"
-DEST="assets/resume.pdf"
+# Define paths (text-based resume after PDF-to-text conversion)
+SOURCE="my_app/me/resume.txt"
+DEST="assets/resume.txt"
 
 # Check if source exists
 if [ -f "$SOURCE" ]; then
