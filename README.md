@@ -34,3 +34,13 @@ The master copy of the resume is located in `my_app/me/resume.pdf`. To update th
 ```bash
 ./scripts/sync_resume.sh
 ```
+
+### Environment Setup
+
+Create a local environment file from `.env.example` and fill in your real values:
+
+```bash
+cp .env.example .env
+```
+
+Do not commit real API keys.

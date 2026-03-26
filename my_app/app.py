@@ -12,12 +12,16 @@ from datetime import datetime, timezone
 load_dotenv(override=True)
 
 def push(text):
+    token = os.getenv("PUSHOVER_TOKEN")
+    user = os.getenv("PUSHOVER_USER")
+    if not token or not user:
+        return
     try:
         requests.post(
             "https://api.pushover.net/1/messages.json",
             data={
-                "token": os.getenv("PUSHOVER_TOKEN"),
-                "user": os.getenv("PUSHOVER_USER"),
+                "token": token,
+                "user": user,
                 "message": text,
             },
             timeout=10,
@@ -104,6 +108,14 @@ class Me:
         
         self.openai = OpenAI()
         self.name = "Giovanni Lunetta"
+        self.chat_model = os.getenv("CHAT_MODEL", "gpt-4o-mini")
+        self.eval_model = os.getenv("EVAL_MODEL", "gpt-4o-mini")
+        self.gemini_evaluator_model = os.getenv("GEMINI_EVALUATOR_MODEL", "gemini-3.1-flash-lite-preview")
+        fallback_models_env = os.getenv(
+            "GEMINI_EVALUATOR_FALLBACK_MODELS",
+            "gemini-3.1-flash-lite,gemini-3.1-lite,gemini-2.5-flash-lite"
+        )
+        self.gemini_fallback_models = [m.strip() for m in fallback_models_env.split(",") if m.strip()]
         
         # Load LinkedIn profile
         with open("me/linkedin.txt", "r", encoding="utf-8") as f:
@@ -137,11 +149,53 @@ class Me:
                     api_key=google_api_key,
                     base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
                 )
+                self.gemini_evaluator_model = self.resolve_gemini_model(
+                    google_api_key,
+                    self.gemini_evaluator_model,
+                    self.gemini_fallback_models,
+                )
                 self.use_gemini_evaluator = True
             except Exception:
                 self.use_gemini_evaluator = False
         else:
             self.use_gemini_evaluator = False
+
+    def resolve_gemini_model(self, api_key, preferred_model, fallback_models):
+        """Pick the best available Gemini evaluator model at runtime."""
+        preferred_order = [preferred_model] + [m for m in fallback_models if m != preferred_model]
+        try:
+            response = requests.get(
+                "https://generativelanguage.googleapis.com/v1beta/models",
+                params={"key": api_key},
+                timeout=15,
+            )
+            response.raise_for_status()
+            models = response.json().get("models", [])
+            available = set()
+            for model in models:
+                methods = model.get("supportedGenerationMethods", [])
+                if "generateContent" not in methods:
+                    continue
+                name = model.get("name", "")
+                available.add(name.split("/")[-1])
+
+            for candidate in preferred_order:
+                if candidate in available:
+                    if candidate != preferred_model:
+                        print(
+                            f"Gemini preferred model '{preferred_model}' unavailable; using '{candidate}'",
+                            flush=True,
+                        )
+                    return candidate
+
+            print(
+                f"Gemini preferred/fallback models unavailable; using configured model '{preferred_model}'",
+                flush=True,
+            )
+            return preferred_model
+        except Exception as e:
+            print(f"Gemini model discovery failed ({e}); using '{preferred_model}'", flush=True)
+            return preferred_model
 
 
     # Whitelist of allowed tool functions to prevent arbitrary code execution
@@ -154,14 +208,27 @@ class Me:
         results = []
         for tool_call in tool_calls:
             tool_name = tool_call.function.name
-            arguments = json.loads(tool_call.function.arguments)
+            try:
+                arguments = json.loads(tool_call.function.arguments)
+            except json.JSONDecodeError as e:
+                print(f"WARNING: Invalid tool arguments for {tool_name}: {e}", flush=True)
+                results.append({
+                    "role": "tool",
+                    "content": json.dumps({"error": f"Invalid arguments for {tool_name}"}),
+                    "tool_call_id": tool_call.id,
+                })
+                continue
             print(f"Tool called: {tool_name}", flush=True)
             tool = self.ALLOWED_TOOLS.get(tool_name)
             if tool is None:
                 print(f"WARNING: Unknown tool requested: {tool_name}", flush=True)
                 result = {"error": f"Unknown tool: {tool_name}"}
             else:
-                result = tool(**arguments)
+                try:
+                    result = tool(**arguments)
+                except Exception as e:
+                    print(f"WARNING: Tool execution failed for {tool_name}: {e}", flush=True)
+                    result = {"error": f"Tool failed: {tool_name}"}
             results.append({"role": "tool", "content": json.dumps(result), "tool_call_id": tool_call.id})
         return results
     
@@ -257,12 +324,12 @@ The Agent has been provided with context on {self.name} in the form of their sum
             try:
                 # Use Gemini with structured output parsing
                 response = self.gemini.beta.chat.completions.parse(
-                    model="gemini-2.0-flash",
+                    model=self.gemini_evaluator_model,
                     messages=messages,
                     response_format=Evaluation
                 )
                 evaluation = response.choices[0].message.parsed
-                self.log_evaluation(reply, message, history, evaluation, model="gemini-2.0-flash")
+                self.log_evaluation(reply, message, history, evaluation, model=self.gemini_evaluator_model)
                 return evaluation
             except Exception as e:
                 print(f"Gemini evaluation failed: {e}. Falling back to OpenAI.", flush=True)
@@ -270,7 +337,7 @@ The Agent has been provided with context on {self.name} in the form of their sum
         
         # Fallback to OpenAI with JSON mode
         response = self.openai.chat.completions.create(
-            model="gpt-4o-mini",
+            model=self.eval_model,
             messages=messages,
             response_format={"type": "json_object"}
         )
@@ -280,7 +347,7 @@ The Agent has been provided with context on {self.name} in the form of their sum
         except (json.JSONDecodeError, TypeError, KeyError) as e:
             print(f"Failed to parse OpenAI evaluation response: {e}", flush=True)
             evaluation = Evaluation(is_acceptable=True, feedback="Evaluation parse error; accepted by default.")
-        self.log_evaluation(reply, message, history, evaluation, model="gpt-4o-mini")
+        self.log_evaluation(reply, message, history, evaluation, model=self.eval_model)
         return evaluation
     
     def rerun(self, reply, message, history, feedback):
@@ -292,8 +359,9 @@ The Agent has been provided with context on {self.name} in the form of their sum
         updated_system_prompt += "Please provide a better response that addresses the feedback."
         
         messages = [{"role": "system", "content": updated_system_prompt}] + history + [{"role": "user", "content": message}]
+        response = None
         for _ in range(self.MAX_TOOL_ITERATIONS):
-            response = self.openai.chat.completions.create(model="gpt-4o-mini", messages=messages, tools=tools)
+            response = self.openai.chat.completions.create(model=self.chat_model, messages=messages, tools=tools)
             if response.choices[0].finish_reason == "tool_calls":
                 message_obj = response.choices[0].message
                 tool_calls = message_obj.tool_calls
@@ -302,7 +370,12 @@ The Agent has been provided with context on {self.name} in the form of their sum
                 messages.extend(results)
             else:
                 break
-        return response.choices[0].message.content
+        if response is None:
+            return "I had trouble generating a response just now. Please try again."
+        content = response.choices[0].message.content
+        if content:
+            return content
+        return "I had trouble completing that request. Please try again in a moment."
     
     MAX_TOOL_ITERATIONS = 10
 
@@ -312,8 +385,9 @@ The Agent has been provided with context on {self.name} in the form of their sum
         
         # Generate initial response
         messages = [{"role": "system", "content": self.system_prompt()}] + history + [{"role": "user", "content": message}]
+        response = None
         for _ in range(self.MAX_TOOL_ITERATIONS):
-            response = self.openai.chat.completions.create(model="gpt-4o-mini", messages=messages, tools=tools)
+            response = self.openai.chat.completions.create(model=self.chat_model, messages=messages, tools=tools)
             if response.choices[0].finish_reason == "tool_calls":
                 message_obj = response.choices[0].message
                 tool_calls = message_obj.tool_calls
@@ -322,8 +396,12 @@ The Agent has been provided with context on {self.name} in the form of their sum
                 messages.extend(results)
             else:
                 break
-        
+        if response is None:
+            return "I had trouble generating a response just now. Please try again."
+
         reply = response.choices[0].message.content
+        if not reply:
+            return "I had trouble completing that request. Please try again in a moment."
         
         # Evaluate the response
         evaluation = self.evaluate(reply, message, history)
