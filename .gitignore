@@ -7,3 +7,9 @@ env/
 venv/
 .idea/
 .vscode/
+
+# Astro
+node_modules/
+dist/
+.astro/
+astro_site/

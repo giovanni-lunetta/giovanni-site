@@ -1,0 +1,60 @@
+---
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+interface Props {
+	title: string;
+	description?: string;
+}
+
+const { title, description = "Giovanni Lunetta – Data Scientist, AI enthusiast, and product builder at Johnson & Johnson." } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="description" content={description} />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+		
+		<!-- Preconnect and Fonts -->
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		
+		<title>{title}</title>
+	</head>
+	<body>
+		<Header />
+		<main>
+			<slot />
+		</main>
+		<Footer />
+		
+		<script>
+			// Mobile nav toggle logic
+			document.addEventListener('DOMContentLoaded', () => {
+				const navToggle = document.querySelector('.nav-toggle');
+				const nav = document.querySelector('.nav');
+				
+				if (navToggle && nav) {
+					navToggle.addEventListener('click', () => {
+						nav.classList.toggle('open');
+						navToggle.classList.toggle('active');
+					});
+
+					// Close nav when a link is clicked
+					const navLinks = document.querySelectorAll('.nav-link');
+					navLinks.forEach(link => {
+						link.addEventListener('click', () => {
+							nav.classList.remove('open');
+							navToggle.classList.remove('active');
+						});
+					});
+				}
+			});
+		</script>
+	</body>
+</html>

@@ -431,7 +431,7 @@ if __name__ == "__main__":
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
     .gradio-container {
-        background: linear-gradient(135deg, #1a1f2e 0%, #0f1419 100%) !important;
+        background: linear-gradient(135deg, #021008 0%, #021008 100%) !important;
         font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
     }
 
@@ -446,7 +446,7 @@ if __name__ == "__main__":
         text-align: center !important;
         font-size: 2.5rem !important;
         font-weight: 700 !important;
-        text-shadow: 0 0 20px rgba(130, 200, 229, 0.3);
+        text-shadow: 0 0 20px rgba(52, 211, 153, 0.3);
         margin-bottom: 0.25rem !important;
     }
 
@@ -475,8 +475,8 @@ if __name__ == "__main__":
 
     /* Chat area */
     .chatbot {
-        background: #2a3142 !important;
-        border: 1px solid rgba(130, 200, 229, 0.2) !important;
+        background: rgba(15, 118, 110, 0.15) !important;
+        border: 1px solid rgba(52, 211, 153, 0.2) !important;
         border-radius: 12px !important;
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
         min-height: 400px !important;
@@ -484,29 +484,29 @@ if __name__ == "__main__":
 
     /* User messages */
     .message.user {
-        background: linear-gradient(135deg, #0047AB 0%, #003080 100%) !important;
+        background: linear-gradient(135deg, #0F766E 0%, #064e3b 100%) !important;
         border-radius: 12px !important;
     }
 
     /* Bot messages */
     .message.bot {
-        background: #353d52 !important;
-        border: 1px solid rgba(130, 200, 229, 0.15) !important;
+        background: rgba(15, 118, 110, 0.25) !important;
+        border: 1px solid rgba(52, 211, 153, 0.15) !important;
         border-radius: 12px !important;
     }
 
     /* Input area */
     textarea, input {
-        background: #2a3142 !important;
-        border: 2px solid rgba(130, 200, 229, 0.3) !important;
+        background: rgba(15, 118, 110, 0.15) !important;
+        border: 2px solid rgba(52, 211, 153, 0.3) !important;
         color: #ffffff !important;
         border-radius: 8px !important;
         transition: all 0.3s ease !important;
     }
 
     textarea:focus, input:focus {
-        border-color: #82C8E5 !important;
-        box-shadow: 0 0 15px rgba(130, 200, 229, 0.3) !important;
+        border-color: #34D399 !important;
+        box-shadow: 0 0 15px rgba(52, 211, 153, 0.3) !important;
         outline: none !important;
     }
 
@@ -516,33 +516,33 @@ if __name__ == "__main__":
 
     /* Send button */
     button.primary, button[class*="submit"] {
-        background: linear-gradient(135deg, #0047AB 0%, #003080 100%) !important;
+        background: linear-gradient(135deg, #0F766E 0%, #064e3b 100%) !important;
         color: #ffffff !important;
         border: none !important;
         border-radius: 8px !important;
         font-weight: 500 !important;
         transition: all 0.3s ease !important;
-        box-shadow: 0 2px 10px rgba(0, 71, 171, 0.3) !important;
+        box-shadow: 0 2px 10px rgba(15, 118, 110, 0.3) !important;
     }
 
     button.primary:hover, button[class*="submit"]:hover {
         transform: translateY(-1px) !important;
-        box-shadow: 0 4px 20px rgba(130, 200, 229, 0.4) !important;
+        box-shadow: 0 4px 20px rgba(52, 211, 153, 0.4) !important;
     }
 
     /* Example prompt buttons */
     .examples button {
-        background: #2a3142 !important;
-        border: 1px solid rgba(130, 200, 229, 0.25) !important;
-        color: #82C8E5 !important;
+        background: rgba(15, 118, 110, 0.15) !important;
+        border: 1px solid rgba(52, 211, 153, 0.25) !important;
+        color: #34D399 !important;
         border-radius: 8px !important;
         font-size: 0.9rem !important;
         transition: all 0.25s ease !important;
     }
 
     .examples button:hover {
-        border-color: #82C8E5 !important;
-        background: rgba(130, 200, 229, 0.08) !important;
+        border-color: #34D399 !important;
+        background: rgba(52, 211, 153, 0.08) !important;
         transform: translateY(-1px) !important;
     }
 
