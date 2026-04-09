@@ -1,0 +1,12 @@
+<footer class="site-footer">
+    <div class="container footer-content">
+        <p>&copy; <span id="year"></span> Giovanni Lunetta. Built with Astro & Vanilla CSS.</p>
+        <p class="footer-note" style="margin-top: 1rem; font-size: 0.875rem; color: rgba(255,255,255,0.5);">
+            The chat experience is powered by Hugging Face Spaces and OpenAI.
+        </p>
+    </div>
+</footer>
+
+<script>
+    document.getElementById('year').textContent = new Date().getFullYear().toString();
+</script>
