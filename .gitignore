@@ -1,15 +1,1 @@
-.env
-.DS_Store
-__pycache__/
-*.pyc
-.venv/
-env/
-venv/
-.idea/
-.vscode/
-
-# Astro
-node_modules/
-dist/
-.astro/
-astro_site/
+bm9kZV9tb2R1bGVzLwpkaXN0LwouYXN0cm8vCi5lbnYKLmVudi5sb2NhbAouZW52LnByb2R1Y3Rpb24KLkRTX1N0b3JlCi5BcHBsZURvdWJsZQouXyoKKi5sb2cKbnBtLWRlYnVnLmxvZyoKLmNhY2hlLwo=
