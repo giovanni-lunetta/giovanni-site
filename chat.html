@@ -257,7 +257,9 @@ function ChatApp({ t, apiUrl }) {
         padding: mobile ? '1.5rem 1rem' : '2rem 2rem',
         borderBottom: `1px solid ${t.border}`,
         textAlign: 'center',
+        position: 'relative',
       }}>
+        <a href="/" style={{ position: 'absolute', left: mobile ? '1rem' : '2rem', top: '50%', transform: 'translateY(-50%)', fontFamily: '"DM Sans", sans-serif', fontSize: '0.875rem', color: t.textMuted, display: 'flex', alignItems: 'center', gap: '0.375rem' }}>← Back</a>
         <h1 style={{
           fontFamily: '"DM Serif Display", serif',
           fontSize: 'clamp(1.5rem, 4vw, 2.5rem)',
