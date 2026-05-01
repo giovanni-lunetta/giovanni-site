@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Giovanni Lunetta</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+    body { font-family: 'DM Sans', sans-serif; overflow-x: hidden; }
+    a { text-decoration: none; }
+    button { font-family: inherit; }
+    em { font-style: italic; }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect } = React;
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "theme": "light",
+  "accent": "indigo"
+}/*EDITMODE-END*/;
+
+const ACCENTS = {
+  gold:   { main: 'oklch(72% 0.155 68)',  dark: 'oklch(19% 0.055 68)',  light: 'oklch(94% 0.04 68)'  },
+  indigo: { main: 'oklch(58% 0.175 265)', dark: 'oklch(17% 0.055 265)', light: 'oklch(94% 0.04 265)' },
+  sage:   { main: 'oklch(63% 0.115 155)', dark: 'oklch(16% 0.045 155)', light: 'oklch(94% 0.04 155)' },
+};
+
+const BASE = {
+  dark: {
+    bg: 'oklch(11% 0.018 45)', bgAlt: 'oklch(14.5% 0.022 45)', surface: 'oklch(16.5% 0.022 45)',
+    border: 'oklch(23% 0.02 45)', text: 'oklch(93% 0.008 50)', textMuted: 'oklch(64% 0.008 50)', textFaint: 'oklch(40% 0.008 50)',
+  },
+  light: {
+    bg: 'oklch(97.5% 0.01 60)', bgAlt: 'oklch(93% 0.016 60)', surface: 'oklch(100% 0 0)',
+    border: 'oklch(84% 0.016 55)', text: 'oklch(14% 0.015 45)', textMuted: 'oklch(42% 0.01 45)', textFaint: 'oklch(62% 0.01 45)',
+  },
+};
+
+function buildTheme(themeKey, accentKey) {
+  const b = BASE[themeKey];
+  const a = ACCENTS[accentKey];
+  return { ...b, accent: a.main, accentBg: themeKey === 'dark' ? a.dark : a.light };
+}
+
+function useMobile(bp = 680) {
+  const [mob, setMob] = useState(window.innerWidth < bp);
+  useEffect(() => {
+    const fn = () => setMob(window.innerWidth < bp);
+    window.addEventListener('resize', fn);
+    return () => window.removeEventListener('resize', fn);
+  }, [bp]);
+  return mob;
+}
+
+// ── Micro-components ──────────────────────────────────────────────────────────
+
+function Overline({ children, t }) {
+  return (
+    <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: '0.72rem', fontWeight: 600, letterSpacing: '0.13em', textTransform: 'uppercase', color: t.accent, marginBottom: '1.5rem', transition: 'color 350ms ease' }}>{children}</p>
+  );
+}
+
+function Tag({ children, t }) {
+  return (
+    <span style={{ fontFamily: '"DM Sans", sans-serif', fontSize: '0.68rem', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', color: t.accent, background: t.accentBg, padding: '0.2rem 0.55rem', borderRadius: 4, whiteSpace: 'nowrap', transition: 'color 350ms ease, background 350ms ease' }}>{children}</span>
+  );
+}
+
+function PrimaryBtn({ children, onClick, t }) {
+  const [hov, setHov] = useState(false);
+  return (
+    <button onClick={onClick} onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)} style={{ padding: '0.875rem 2rem', borderRadius: 8, border: 'none', cursor: 'pointer', fontFamily: '"DM Sans", sans-serif', fontWeight: 600, fontSize: '0.9rem', background: t.accent, color: t.bg, whiteSpace: 'nowrap', opacity: hov ? 0.85 : 1, transition: 'opacity 150ms ease, background 350ms ease, color 350ms ease' }}>{children}</button>
+  );
+}
+
+function GhostBtn({ children, onClick, t }) {
+  const [hov, setHov] = useState(false);
+  return (
+    <button onClick={onClick} onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)} style={{ padding: '0.875rem 2rem', borderRadius: 8, cursor: 'pointer', fontFamily: '"DM Sans", sans-serif', fontWeight: 500, fontSize: '0.9rem', background: 'transparent', color: t.text, whiteSpace: 'nowrap', border: `1px solid ${hov ? t.accent : t.border}`, transition: 'border-color 200ms ease, color 350ms ease' }}>{children}</button>
+  );
+}
+
+// ── Nav ───────────────────────────────────────────────────────────────────────
+
+function Nav({ page, setPage, t }) {
+  const mobile = useMobile();
+  const [open, setOpen] = useState(false);
+  const pages = [{ key: 'home', label: 'Home' }, { key: 'hobbies', label: 'Hobbies' }, { key: 'resume', label: 'Resume' }, { key: 'chat', label: 'Chat' }];
+
+  const go = (k) => { setPage(k); setOpen(false); };
+
+  const Burger = () => (
+    <button onClick={() => setOpen(o => !o)} aria-label="Toggle menu" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '0.5rem', display: 'flex', flexDirection: 'column', gap: '5px' }}>
+      {[0, 1, 2].map(i => (
+        <span key={i} style={{
+          display: 'block', width: 22, height: 2, background: t.text, borderRadius: 1, transition: 'all 220ms ease',
+          transform: open ? (i === 0 ? 'rotate(45deg) translate(5px, 5px)' : i === 2 ? 'rotate(-45deg) translate(5px, -5px)' : 'none') : 'none',
+          opacity: open && i === 1 ? 0 : 1,
+        }} />
+      ))}
+    </button>
+  );
+
+  return (
+    <>
+      <header style={{ position: 'sticky', top: 0, zIndex: 100, background: t.bg + 'e8', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)', borderBottom: `1px solid ${t.border}`, transition: 'background 350ms ease, border-color 350ms ease' }}>
+        <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 60 }}>
+          <button onClick={() => go('home')} style={{ fontFamily: '"DM Serif Display", serif', fontSize: '1.35rem', color: t.text, background: 'none', border: 'none', cursor: 'pointer', letterSpacing: '-0.01em', transition: 'color 350ms ease' }}>GL</button>
+          {mobile ? <Burger /> : (
+            <nav style={{ display: 'flex', alignItems: 'center', gap: '0.125rem' }}>
+              {pages.map(({ key, label }) => {
+                const active = page === key;
+                return <button key={key} onClick={() => go(key)} style={{ padding: '0.4rem 0.875rem', borderRadius: 6, border: 'none', cursor: 'pointer', fontFamily: '"DM Sans", sans-serif', fontSize: '0.875rem', fontWeight: active ? 600 : 400, color: active ? t.accent : t.textMuted, background: active ? t.accentBg : 'transparent', transition: 'color 200ms ease, background 200ms ease' }}>{label}</button>;
+              })}
+              <a href="https://github.com/giovanni-lunetta" target="_blank" rel="noopener noreferrer" style={{ padding: '0.4rem 0.875rem', fontFamily: '"DM Sans", sans-serif', fontSize: '0.875rem', color: t.textMuted, transition: 'color 200ms ease' }}>GitHub ↗</a>
+              <a href="https://www.linkedin.com/in/giovanni-lunetta/" target="_blank" rel="noopener noreferrer" style={{ padding: '0.4rem 0.875rem', fontFamily: '"DM Sans", sans-serif', fontSize: '0.875rem', color: t.textMuted, transition: 'color 200ms ease' }}>LinkedIn ↗</a>
+            </nav>
+          )}
+        </div>
+      </header>
+
+      {/* Mobile Menu */}
+      {mobile && open && (
+        <div style={{ position: 'fixed', top: 60, left: 0, right: 0, bottom: 0, zIndex: 99, background: t.bg, borderTop: `1px solid ${t.border}`, display: 'flex', flexDirection: 'column', transition: 'background 350ms ease' }}>
+          {pages.map(({ key, label }) => (
+            <button key={key} onClick={() => go(key)} style={{ padding: '1.125rem 1.5rem', border: 'none', borderBottom: `1px solid ${t.border}`, cursor: 'pointer', fontFamily: '"DM Sans", sans-serif', fontSize: '1.1rem', fontWeight: page === key ? 600 : 400, color: page === key ? t.accent : t.text, background: 'transparent', textAlign: 'left', transition: 'color 200ms ease' }}>{label}</button>
+          ))}
+          <a href="https://github.com/giovanni-lunetta" target="_blank" rel="noopener noreferrer" style={{ padding: '1.125rem 1.5rem', fontFamily: '"DM Sans", sans-serif', fontSize: '1.1rem', color: t.textMuted, borderBottom: `1px solid ${t.border}` }}>GitHub ↗</a>
+          <a href="https://www.linkedin.com/in/giovanni-lunetta/" target="_blank" rel="noopener noreferrer" style={{ padding: '1.125rem 1.5rem', fontFamily: '"DM Sans", sans-serif', fontSize: '1.1rem', color: t.textMuted, borderBottom: `1px solid ${t.border}` }}>LinkedIn ↗</a>
+        </div>
+      )}
+    </>
+  );
+}
+
+// ── Footer ────────────────────────────────────────────────────────────────────
+
+function Footer({ t }) {
+  return (
+    <footer style={{ marginTop: 'auto', padding: '2.5rem 1.5rem', borderTop: `1px solid ${t.border}`, transition: 'border-color 350ms ease' }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+        <span style={{ fontFamily: '"DM Serif Display", serif', fontSize: '0.95rem', color: t.textFaint, transition: 'color 350ms ease' }}>Giovanni Lunetta · 2026</span>
+        <div style={{ display: 'flex', gap: '1.5rem' }}>
+          {[['GitHub', 'https://github.com/giovanni-lunetta'], ['LinkedIn', 'https://www.linkedin.com/in/giovanni-lunetta/'], ['Medium', 'https://medium.com/@giovannilunetta']].map(([l, h]) => (
+            <a key={l} href={h} target="_blank" rel="noopener noreferrer" style={{ fontFamily: '"DM Sans", sans-serif', fontSize: '0.85rem', color: t.textMuted, transition: 'color 200ms ease' }}>{l}</a>
+          ))}
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+// ── Home ──────────────────────────────────────────────────────────────────────
+
+const PROJECTS = [
+  { n: '01', title: 'Surgical Workflow Analytics', desc: 'Clustering and preference modeling from surgical log data — turning complex operational records into actionable business intelligence for strategic planning.', tags: ['Clustering', 'Python', 'Tableau'] },
+  { n: '02', title: 'Rare Disease Patient Segmentation', desc: 'Feature engineering and unsupervised learning to identify treatment patterns across rare disease populations, supporting precision medicine strategy.', tags: ['Segmentation', 'ML', 'Healthcare'] },
+  { n: '03', title: 'GenAI & Document Understanding', desc: 'RAG pipelines, structured extraction, and evaluation workflows. Harnessing LLMs to unlock insight from unstructured data at enterprise scale.', tags: ['RAG', 'LLMs', 'Evaluation'] },
+];
+
+function ProjectRow({ n, title, desc, tags, t }) {
+  const [hov, setHov] = useState(false);
+  return (
+    <div onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)} style={{ display: 'grid', gridTemplateColumns: '3rem 1fr', gap: '1.25rem', padding: '1.75rem 0', borderTop: `1px solid ${t.border}`, borderLeft: hov ? `3px solid ${t.accent}` : '3px solid transparent', paddingLeft: '0.75rem', marginLeft: '-1rem', background: hov ? t.accentBg : 'transparent', transition: 'border-color 200ms ease, background 200ms ease' }}>
+      <span style={{ fontFamily: '"DM Serif Display", serif', fontSize: '0.9rem', color: hov ? t.accent : t.textFaint, paddingTop: '0.3rem', transition: 'color 200ms ease' }}>{n}</span>
+      <div>
+        <h3 style={{ fontFamily: '"DM Serif Display", serif', fontSize: 'clamp(1.2rem, 3vw, 1.5rem)', color: t.text, marginBottom: '0.5rem', letterSpacing: '-0.015em', transition: 'color 350ms ease' }}>{title}</h3>
+        <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: '0.88rem', color: t.textMuted, lineHeight: 1.75, marginBottom: '0.875rem', transition: 'color 350ms ease' }}>{desc}</p>
+        <div style={{ display: 'flex', gap: '0.45rem', flexWrap: 'wrap' }}>
+          {tags.map(tag => <Tag key={tag} t={t}>{tag}</Tag>)}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function InfoCard({ label, value, t }) {
+  return (
+    <div style={{ padding: '1rem 1.25rem', borderRadius: 10, background: t.surface, border: `1px solid ${t.border}`, transition: 'background 350ms ease, border-color 350ms ease' }}>
+      <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: '0.68rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: t.accent, marginBottom: '0.3rem', transition: 'color 350ms ease' }}>{label}</p>
+      <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: '0.875rem', color: t.text, transition: 'color 350ms ease' }}>{value}</p>
+    </div>
+  );
+}
+
+function HomePage({ t, setPage }) {
+  const mobile = useMobile();
+  const px = mobile ? '1.25rem' : '2rem';
+
+  return (
+    <main style={{ flex: 1 }}>
+      {/* Hero */}
+      <section style={{ maxWidth: 1100, margin: '0 auto', padding: `${mobile ? '3.5rem' : '6rem'} ${px} ${mobile ? '3rem' : '5rem'}`, borderBottom: `1px solid ${t.border}`, transition: 'border-color 350ms ease' }}>
+        <Overline t={t}>Data Scientist · Builder · Competitor</Overline>
+        <h1 style={{ fontFamily: '"DM Serif Display", serif', fontSize: 'clamp(3rem, 11vw, 6.5rem)', lineHeight: 1.0, letterSpacing: '-0.025em', color: t.text, marginBottom: '1.5rem', transition: 'color 350ms ease' }}>
+          Giovanni<br />Lunetta.
+        </h1>
+        <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: mobile ? '1rem' : '1.075rem', lineHeight: 1.85, color: t.textMuted, maxWidth: '52ch', marginBottom: '2rem', transition: 'color 350ms ease' }}>
+          Data Scientist at J&amp;J, builder of things that don't exist yet, and someone who genuinely
+          believes AI should be useful to real people — not just impressive on paper.
+        </p>
+        <div style={{ display: 'flex', gap: '0.875rem', flexWrap: 'wrap' }}>
+          <PrimaryBtn t={t} onClick={() => setPage('resume')}>View Resume</PrimaryBtn>
+          <GhostBtn t={t} onClick={() => setPage('chat')}>Chat with my AI →</GhostBtn>
+        </div>
+      </section>
+
+      {/* Work */}
+      <section style={{ maxWidth: 1100, margin: '0 auto', padding: `${mobile ? '2.5rem' : '4rem'} ${px} ${mobile ? '3rem' : '5rem'}`, borderBottom: `1px solid ${t.border}`, transition: 'border-color 350ms ease' }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '0.25rem', gap: '1rem' }}>
+          <h2 style={{ fontFamily: '"DM Serif Display", serif', fontSize: 'clamp(1.75rem, 5vw, 2.5rem)', color: t.text, letterSpacing: '-0.02em', transition: 'color 350ms ease' }}>Selected Work</h2>
+          <span style={{ fontFamily: '"DM Sans", sans-serif', fontSize: '0.72rem', fontWeight: 600, letterSpacing: '0.1em', color: t.textFaint, textTransform: 'uppercase', whiteSpace: 'nowrap', transition: 'color 350ms ease' }}>J&amp;J TLDP</span>
+        </div>
+        {PROJECTS.map(p => <ProjectRow key={p.n} {...p} t={t} />)}
+
+        {/* DateBack */}
+        <div style={{ marginTop: '1.75rem', padding: '1.125rem 1.5rem', borderRadius: 10, background: t.bgAlt, border: `1px solid ${t.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap', transition: 'background 350ms ease, border-color 350ms ease' }}>
+          <div>
+            <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: '0.875rem', fontWeight: 600, color: t.text, marginBottom: '0.2rem', transition: 'color 350ms ease' }}>DateBack</p>
+            <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: '0.82rem', color: t.textMuted, lineHeight: 1.65, transition: 'color 350ms ease' }}>A macOS app for exporting Snapchat Memories with correct metadata. Built because it didn't exist.</p>
+          </div>
+          <span style={{ fontFamily: '"DM Sans", sans-serif', fontSize: '0.68rem', fontWeight: 600, color: t.textFaint, textTransform: 'uppercase', letterSpacing: '0.09em', whiteSpace: 'nowrap', transition: 'color 350ms ease' }}>Personal</span>
+        </div>
+      </section>
+
+      {/* About */}
+      <section style={{ maxWidth: 1100, margin: '0 auto', padding: `${mobile ? '3rem' : '5rem'} ${px} ${mobile ? '4rem' : '6rem'}` }}>
+        <div style={{ display: 'grid', gridTemplateColumns: mobile ? '1fr' : 'repeat(auto-fit, minmax(300px, 1fr))', gap: mobile ? '2.5rem' : '4rem', alignItems: 'start' }}>
+          <div>
+            <Overline t={t}>About</Overline>
+            <h2 style={{ fontFamily: '"DM Serif Display", serif', fontSize: 'clamp(1.75rem, 5vw, 2.75rem)', color: t.text, letterSpacing: '-0.02em', marginBottom: '1.25rem', lineHeight: 1.1, transition: 'color 350ms ease' }}>
+              Builder. Competitor.<br /><em>Grounded in faith.</em>
+            </h2>
+            <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: '1rem', lineHeight: 1.85, color: t.textMuted, transition: 'color 350ms ease' }}>
+              I approach every problem as an opportunity to build something useful and learn something new.
+              Outside of data, I'm collecting Pokémon cards, following sports, and pushing myself at the gym.
+              Faith and relationships are the foundation I build everything else on.
+            </p>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <InfoCard label="Education" value="M.S. Data Science + B.A. Statistics & Poly Sci — UConn" t={t} />
+            <InfoCard label="Currently" value="Data Scientist @ J&J · TLDP Program" t={t} />
+            <InfoCard label="Location" value="Northern New Jersey" t={t} />
+            <InfoCard label="Writing" value={<a href="https://medium.com/@giovannilunetta" target="_blank" rel="noopener noreferrer" style={{ color: t.accent, textDecoration: 'none' }}>medium.com/@giovannilunetta</a>} t={t} />
+          </div>
+        </div>
+      </section>
+    </main>
+  );
+}
+
+// ── Hobbies ───────────────────────────────────────────────────────────────────
+
+const HOBBIES = [
+  { n: '01', title: 'Sports & Athletics', tags: ['Basketball', 'Soccer', 'Table Tennis', 'Volleyball'], body: "Highly competitive and always have been. Whether it's a pickup basketball game, an intramural soccer league, or a table tennis grudge match — I thrive on competition, teamwork, and the physical challenge." },
+  { n: '02', title: 'Pokémon Collecting', tags: ['TCG', 'Sealed', 'PSA Grading'], body: "Started collecting as a kid, got serious again as an adult. My collection is massive. I love the blend of nostalgia, community, and the surprisingly deep market dynamics behind sealed investing." },
+  { n: '03', title: 'Faith & Relationships', tags: ['Christianity', 'Community', 'Family'], body: "Faith is my foundation. I invest deeply in the people around me — my girlfriend, family, church community — and I try to lead with grace and purpose in everything I do." },
+  { n: '04', title: 'Fitness', tags: ['Weightlifting', 'Consistency'], body: "The gym is my daily reset. Show up, put in the work, improve steadily. The same philosophy I try to bring to everything else." },
+];
+
+function HobbiesPage({ t }) {
+  const mobile = useMobile();
+  const px = mobile ? '1.25rem' : '2rem';
+
+  return (
+    <main style={{ flex: 1 }}>
+      <section style={{ maxWidth: 1100, margin: '0 auto', padding: `${mobile ? '3.5rem' : '5rem'} ${px} 3rem`, borderBottom: `1px solid ${t.border}`, transition: 'border-color 350ms ease' }}>
+        <Overline t={t}>Beyond the Screen</Overline>
+        <h1 style={{ fontFamily: '"DM Serif Display", serif', fontSize: 'clamp(2.5rem, 9vw, 5.5rem)', lineHeight: 1.0, letterSpacing: '-0.025em', color: t.text, marginBottom: '1.25rem', transition: 'color 350ms ease' }}>
+          What keeps me<br />grounded.
+        </h1>
+        <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: '1rem', color: t.textMuted, lineHeight: 1.8, maxWidth: '48ch', transition: 'color 350ms ease' }}>The work is one part of the story. Here's the rest.</p>
+      </section>
+      <section style={{ maxWidth: 1100, margin: '0 auto', padding: `3rem ${px} 5rem` }}>
+        <div style={{ display: 'grid', gridTemplateColumns: mobile ? '1fr' : 'repeat(2, 1fr)', gap: '1.25rem' }}>
+          {HOBBIES.map(h => (
+            <article key={h.n} style={{ padding: '1.75rem', borderRadius: 12, background: t.surface, border: `1px solid ${t.border}`, transition: 'background 350ms ease, border-color 350ms ease' }}>
+              <span style={{ fontFamily: '"DM Serif Display", serif', fontSize: '1.75rem', color: t.border, display: 'block', marginBottom: '1rem', lineHeight: 1, transition: 'color 350ms ease' }}>{h.n}</span>
+              <h2 style={{ fontFamily: '"DM Serif Display", serif', fontSize: 'clamp(1.2rem, 3vw, 1.4rem)', color: t.text, marginBottom: '0.6rem', letterSpacing: '-0.01em', transition: 'color 350ms ease' }}>{h.title}</h2>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem', marginBottom: '0.875rem' }}>
+                {h.tags.map(tag => <Tag key={tag} t={t}>{tag}</Tag>)}
+              </div>
+              <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: '0.88rem', color: t.textMuted, lineHeight: 1.78, transition: 'color 350ms ease' }}>{h.body}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+    </main>
+  );
+}
+
+// ── Resume ────────────────────────────────────────────────────────────────────
+
+function ResumePage({ t }) {
+  const mobile = useMobile();
+  const px = mobile ? '1.25rem' : '2rem';
+
+  return (
+    <main style={{ flex: 1 }}>
+      <section style={{ maxWidth: 900, margin: '0 auto', padding: `${mobile ? '3.5rem' : '5rem'} ${px} 6rem` }}>
+        <Overline t={t}>Resume</Overline>
+        <h1 style={{ fontFamily: '"DM Serif Display", serif', fontSize: 'clamp(2.5rem, 8vw, 4rem)', lineHeight: 1.0, letterSpacing: '-0.025em', color: t.text, marginBottom: '2rem', transition: 'color 350ms ease' }}>
+          Experience &amp;<br />Education.
+        </h1>
+        <a href="/resume.pdf" download style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.875rem 2rem', borderRadius: 8, background: t.accent, color: t.bg, fontFamily: '"DM Sans", sans-serif', fontWeight: 600, fontSize: '0.9rem', marginBottom: '2.5rem', whiteSpace: 'nowrap', transition: 'background 350ms ease, color 350ms ease' }}>↓ Download PDF</a>
+        <div style={{ width: '100%', borderRadius: 12, overflow: 'hidden', border: `1px solid ${t.border}`, transition: 'border-color 350ms ease' }}>
+          <div style={{ padding: '0.6rem 1rem', background: t.bgAlt, borderBottom: `1px solid ${t.border}`, display: 'flex', gap: '0.45rem', alignItems: 'center', transition: 'background 350ms ease, border-color 350ms ease' }}>
+            {['#ef4444', '#f59e0b', '#22c55e'].map(c => <div key={c} style={{ width: 11, height: 11, borderRadius: '50%', background: c }} />)}
+          </div>
+          <iframe src="/resume.pdf" style={{ width: '100%', height: '80vh', border: 'none', display: 'block', background: t.surface }} title="Resume PDF" />
+        </div>
+      </section>
+    </main>
+  );
+}
+
+// ── Chat ──────────────────────────────────────────────────────────────────────
+
+function ChatPage({ t }) {
+  const mobile = useMobile();
+  const px = mobile ? '1.25rem' : '2rem';
+
+  return (
+    <main style={{ flex: 1 }}>
+      <section style={{ maxWidth: 900, margin: '0 auto', padding: `${mobile ? '3.5rem' : '5rem'} ${px} 6rem` }}>
+        <Overline t={t}>AI Twin</Overline>
+        <h1 style={{ fontFamily: '"DM Serif Display", serif', fontSize: 'clamp(2.5rem, 8vw, 4rem)', lineHeight: 1.0, letterSpacing: '-0.025em', color: t.text, marginBottom: '1.5rem', transition: 'color 350ms ease' }}>
+          Chat with<br /><em>my AI.</em>
+        </h1>
+        <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: '1rem', color: t.textMuted, lineHeight: 1.85, maxWidth: '48ch', marginBottom: '2.5rem', transition: 'color 350ms ease' }}>
+          Ask about my background, projects, or what I'm into. This AI version of me knows the story.
+        </p>
+        <div style={{ width: '100%', borderRadius: 12, overflow: 'hidden', border: `1px solid ${t.border}`, background: t.surface, minHeight: 420, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 350ms ease, border-color 350ms ease' }}>
+          <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: '0.875rem', color: t.textFaint, transition: 'color 350ms ease' }}>AI chat interface embedded here</p>
+        </div>
+      </section>
+    </main>
+  );
+}
+
+// ── Tweaks Panel ──────────────────────────────────────────────────────────────
+
+function TweaksPanel({ tweaks, setTweak, onClose }) {
+  const panelBg = 'oklch(15% 0.018 45)', panelBdr = 'oklch(25% 0.02 45)', labelClr = 'oklch(50% 0.008 50)', textClr = 'oklch(85% 0.008 50)';
+
+  function Chip({ active, color, bg, label, onClick }) {
+    return <button onClick={onClick} style={{ flex: 1, padding: '0.45rem 0.5rem', borderRadius: 7, border: `1px solid ${active ? color : panelBdr}`, background: active ? bg : 'transparent', color: active ? color : labelClr, fontFamily: '"DM Sans", sans-serif', fontSize: '0.78rem', fontWeight: 500, cursor: 'pointer', textTransform: 'capitalize', transition: 'all 150ms ease' }}>{label}</button>;
+  }
+
+  return (
+    <div style={{ position: 'fixed', bottom: '1.5rem', right: '1.5rem', zIndex: 9999, width: 240, background: panelBg, border: `1px solid ${panelBdr}`, borderRadius: 12, boxShadow: '0 20px 48px oklch(0% 0 0 / 55%)', overflow: 'hidden' }}>
+      <div style={{ padding: '0.875rem 1.25rem', borderBottom: `1px solid ${panelBdr}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <p style={{ fontFamily: '"DM Sans", sans-serif', fontWeight: 600, fontSize: '0.85rem', color: textClr }}>Tweaks</p>
+        <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: labelClr, fontSize: '1.2rem', lineHeight: 1, padding: '0 0.25rem' }}>×</button>
+      </div>
+      <div style={{ padding: '1.125rem 1.25rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+        <div>
+          <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: '0.68rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: labelClr, marginBottom: '0.5rem' }}>Theme</p>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            {['dark', 'light'].map(k => <Chip key={k} active={tweaks.theme === k} color={ACCENTS[tweaks.accent].main} bg={ACCENTS[tweaks.accent].dark} label={k} onClick={() => setTweak('theme', k)} />)}
+          </div>
+        </div>
+        <div>
+          <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: '0.68rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: labelClr, marginBottom: '0.5rem' }}>Accent</p>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            {Object.entries(ACCENTS).map(([k, v]) => <Chip key={k} active={tweaks.accent === k} color={v.main} bg={v.dark} label={k} onClick={() => setTweak('accent', k)} />)}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── App ───────────────────────────────────────────────────────────────────────
+
+function App() {
+  const [tweaks, setTweaksState] = useState(TWEAK_DEFAULTS);
+  const [page, setPage] = useState('home');
+  const [showTweaks, setShowTweaks] = useState(false);
+
+  const setTweak = (key, val) => {
+    setTweaksState(prev => {
+      const next = { ...prev, [key]: val };
+      window.parent.postMessage({ type: '__edit_mode_set_keys', edits: next }, '*');
+      return next;
+    });
+  };
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.data?.type === '__activate_edit_mode') setShowTweaks(true);
+      if (e.data?.type === '__deactivate_edit_mode') setShowTweaks(false);
+    };
+    window.addEventListener('message', handler);
+    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+    return () => window.removeEventListener('message', handler);
+  }, []);
+
+  const t = buildTheme(tweaks.theme, tweaks.accent);
+
+  return (
+    <div style={{ background: t.bg, color: t.text, minHeight: '100vh', display: 'flex', flexDirection: 'column', overflowX: 'hidden', transition: 'background 350ms ease, color 350ms ease' }}>
+      <Nav page={page} setPage={setPage} t={t} />
+      {page === 'home'    && <HomePage    t={t} setPage={setPage} />}
+      {page === 'hobbies' && <HobbiesPage t={t} />}
+      {page === 'resume'  && <ResumePage  t={t} />}
+      {page === 'chat'    && <ChatPage    t={t} />}
+      <Footer t={t} />
+      {showTweaks && (
+        <TweaksPanel tweaks={tweaks} setTweak={setTweak} onClose={() => { setShowTweaks(false); window.parent.postMessage({ type: '__edit_mode_dismissed' }, '*'); }} />
+      )}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
