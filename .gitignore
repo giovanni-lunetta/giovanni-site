@@ -1,1 +1,13 @@
-bm9kZV9tb2R1bGVzLwpkaXN0LwouYXN0cm8vCi5lbnYKLmVudi5sb2NhbAouZW52LnByb2R1Y3Rpb24KLkRTX1N0b3JlCi5BcHBsZURvdWJsZQouXyoKKi5sb2cKbnBtLWRlYnVnLmxvZyoKLmNhY2hlLwo=
+node_modules/
+dist/
+.astro/
+.env
+.env.local
+.env.production
+.DS_Store
+.AppleDouble
+._*
+*.log
+npm-debug.log*
+.cache/
+.venv/
