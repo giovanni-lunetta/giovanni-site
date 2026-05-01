@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat with Giovanni's AI</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+    body { font-family: 'DM Sans', sans-serif; overflow-x: hidden; }
+    a { text-decoration: none; }
+    button { font-family: inherit; }
+    em { font-style: italic; }
+    ::selection { background: oklch(58% 0.175 265 / 0.2); color: inherit; }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "theme": "light",
+  "accent": "indigo",
+  "apiUrl": "https:\/\/your-api-endpoint.com\/chat"
+}/*EDITMODE-END*/;
+
+const ACCENTS = {
+  gold:   { main: 'oklch(72% 0.155 68)',  dark: 'oklch(19% 0.055 68)',  light: 'oklch(94% 0.04 68)'  },
+  indigo: { main: 'oklch(58% 0.175 265)', dark: 'oklch(17% 0.055 265)', light: 'oklch(94% 0.04 265)' },
+  sage:   { main: 'oklch(63% 0.115 155)', dark: 'oklch(16% 0.045 155)', light: 'oklch(94% 0.04 155)' },
+};
+
+const BASE = {
+  dark: {
+    bg: 'oklch(11% 0.018 45)', bgAlt: 'oklch(14.5% 0.022 45)', surface: 'oklch(16.5% 0.022 45)',
+    border: 'oklch(23% 0.02 45)', text: 'oklch(93% 0.008 50)', textMuted: 'oklch(64% 0.008 50)', textFaint: 'oklch(40% 0.008 50)',
+  },
+  light: {
+    bg: 'oklch(97.5% 0.01 60)', bgAlt: 'oklch(93% 0.016 60)', surface: 'oklch(100% 0 0)',
+    border: 'oklch(84% 0.016 55)', text: 'oklch(14% 0.015 45)', textMuted: 'oklch(42% 0.01 45)', textFaint: 'oklch(62% 0.01 45)',
+  },
+};
+
+function buildTheme(themeKey, accentKey) {
+  const b = BASE[themeKey];
+  const a = ACCENTS[accentKey];
+  return { ...b, accent: a.main, accentBg: themeKey === 'dark' ? a.dark : a.light };
+}
+
+function useSystemTheme() {
+  const [sysTheme, setSysTheme] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    return 'light';
+  });
+
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const handler = (e) => setSysTheme(e.matches ? 'dark' : 'light');
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+
+  return sysTheme;
+}
+
+function useMobile(bp = 680) {
+  const [mob, setMob] = useState(window.innerWidth < bp);
+  useEffect(() => {
+    const fn = () => setMob(window.innerWidth < bp);
+    window.addEventListener('resize', fn);
+    return () => window.removeEventListener('resize', fn);
+  }, [bp]);
+  return mob;
+}
+
+// ── Message Types ────────────────────────────────────────────────────────────
+
+function Message({ role, content, thinking, timestamp, t }) {
+  const isUser = role === 'user';
+  const isPending = role === 'pending';
+
+  return (
+    <div style={{
+      display: 'flex',
+      justifyContent: isUser ? 'flex-end' : 'flex-start',
+      marginBottom: '1rem',
+      animation: 'slideIn 0.3s ease-out',
+    }}>
+      <div style={{
+        maxWidth: '85%',
+        padding: '0.875rem 1.125rem',
+        borderRadius: 12,
+        background: isUser ? t.accent : t.surface,
+        border: isUser ? 'none' : `1px solid ${t.border}`,
+        color: isUser ? t.bg : t.text,
+        wordWrap: 'break-word',
+        lineHeight: 1.6,
+        fontSize: '0.95rem',
+        transition: 'all 200ms ease',
+      }}>
+        {isPending ? (
+          <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+            {[0, 1, 2].map(i => (
+              <div
+                key={i}
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  background: t.textMuted,
+                  animation: `pulse 1.4s ease-in-out ${i * 0.2}s infinite`,
+                }}
+              />
+            ))}
+          </div>
+        ) : (
+          <>
+            {thinking && (
+              <p style={{
+                fontSize: '0.8rem',
+                opacity: 0.7,
+                marginBottom: '0.5rem',
+                fontStyle: 'italic',
+                color: isUser ? 'inherit' : t.textMuted,
+              }}>💭 {thinking}</p>
+            )}
+            <p style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{content}</p>
+          </>
+        )}
+      </div>
+      {timestamp && (
+        <span style={{
+          fontSize: '0.75rem',
+          color: t.textFaint,
+          marginTop: '0.3rem',
+          marginLeft: '0.5rem',
+          alignSelf: 'flex-end',
+        }}>{timestamp}</span>
+      )}
+    </div>
+  );
+}
+
+// ── Chat UI ──────────────────────────────────────────────────────────────────
+
+function ChatApp({ t, apiUrl }) {
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [thinking, setThinking] = useState('');
+  const [responseTime, setResponseTime] = useState(null);
+  const messagesEndRef = useRef(null);
+  const mobile = useMobile();
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  useEffect(scrollToBottom, [messages]);
+
+  const formatTime = (ms) => {
+    if (ms < 1000) return `${Math.round(ms)}ms`;
+    return `${(ms / 1000).toFixed(1)}s`;
+  };
+
+  const sendMessage = async () => {
+    if (!input.trim()) return;
+
+    const userMsg = input.trim();
+    setInput('');
+    setMessages(prev => [...prev, {
+      role: 'user',
+      content: userMsg,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    }]);
+
+    setLoading(true);
+    setThinking('Thinking...');
+    setResponseTime(null);
+    const startTime = Date.now();
+
+    try {
+      // Convert messages to the format your API expects
+      const history = messages.map(m => ({
+        role: m.role,
+        content: m.content,
+      }));
+
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: userMsg,
+          history: history,
+        }),
+      });
+
+      if (!response.ok) throw new Error(`API error: ${response.status}`);
+
+      const data = await response.json();
+      const elapsed = Date.now() - startTime;
+
+      setThinking('');
+      setResponseTime(formatTime(elapsed));
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: data.reply || data.response || 'No response.',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      }]);
+    } catch (error) {
+      console.error('Chat error:', error);
+      setThinking('');
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: `Sorry, I encountered an error: ${error.message}. Please check your API connection.`,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      }]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  };
+
+  const clearChat = () => {
+    if (confirm('Clear all messages?')) {
+      setMessages([]);
+      setThinking('');
+      setResponseTime(null);
+    }
+  };
+
+  return (
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      height: '100vh',
+      background: t.bg,
+      color: t.text,
+      transition: 'background 350ms ease, color 350ms ease',
+    }}>
+      {/* Header */}
+      <div style={{
+        padding: mobile ? '1.5rem 1rem' : '2rem 2rem',
+        borderBottom: `1px solid ${t.border}`,
+        textAlign: 'center',
+      }}>
+        <h1 style={{
+          fontFamily: '"DM Serif Display", serif',
+          fontSize: 'clamp(1.5rem, 4vw, 2.5rem)',
+          letterSpacing: '-0.015em',
+          marginBottom: '0.5rem',
+        }}>Chat with Giovanni's AI</h1>
+        <p style={{
+          fontSize: '0.9rem',
+          color: t.textMuted,
+          margin: 0,
+          maxWidth: '60ch',
+          marginLeft: 'auto',
+          marginRight: 'auto',
+        }}>Ask about my background, projects, or what I'm working on. This is an AI trained on my context.</p>
+      </div>
+
+      {/* Messages Container */}
+      <div style={{
+        flex: 1,
+        overflow: 'auto',
+        padding: mobile ? '1rem' : '1.5rem 2rem',
+        maxWidth: 900,
+        margin: '0 auto',
+        width: '100%',
+      }}>
+        {messages.length === 0 ? (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: '100%',
+            textAlign: 'center',
+          }}>
+            <div>
+              <p style={{
+                fontSize: '3rem',
+                marginBottom: '1rem',
+                opacity: 0.5,
+              }}>💬</p>
+              <p style={{
+                color: t.textMuted,
+                fontSize: '1rem',
+                lineHeight: 1.6,
+              }}>Start a conversation by asking me anything!</p>
+            </div>
+          </div>
+        ) : (
+          <>
+            {messages.map((msg, idx) => (
+              <Message key={idx} {...msg} t={t} />
+            ))}
+            {loading && <Message role="pending" content="" t={t} />}
+            <div ref={messagesEndRef} />
+          </>
+        )}
+      </div>
+
+      {/* Response Time Indicator */}
+      {responseTime && (
+        <div style={{
+          textAlign: 'center',
+          fontSize: '0.75rem',
+          color: t.textFaint,
+          padding: '0.5rem',
+        }}>⚡ Response time: {responseTime}</div>
+      )}
+
+      {/* Input Area */}
+      <div style={{
+        padding: mobile ? '1rem' : '1.5rem 2rem',
+        borderTop: `1px solid ${t.border}`,
+        maxWidth: 900,
+        margin: '0 auto',
+        width: '100%',
+      }}>
+        <div style={{
+          display: 'flex',
+          gap: '0.75rem',
+          alignItems: 'flex-end',
+        }}>
+          <textarea
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Ask me anything..."
+            disabled={loading}
+            style={{
+              flex: 1,
+              padding: '0.75rem 1rem',
+              borderRadius: 8,
+              border: `1px solid ${t.border}`,
+              background: t.surface,
+              color: t.text,
+              fontFamily: 'inherit',
+              fontSize: '0.95rem',
+              resize: 'none',
+              minHeight: 44,
+              maxHeight: 120,
+              transition: 'border-color 200ms ease',
+              outline: 'none',
+            }}
+            onFocus={(e) => {
+              e.target.style.borderColor = t.accent;
+              e.target.style.boxShadow = `0 0 0 2px ${t.accentBg}`;
+            }}
+            onBlur={(e) => {
+              e.target.style.borderColor = t.border;
+              e.target.style.boxShadow = 'none';
+            }}
+          />
+          <div style={{ display: 'flex', gap: '0.5rem', flexDirection: 'column' }}>
+            <button
+              onClick={sendMessage}
+              disabled={loading || !input.trim()}
+              style={{
+                padding: '0.75rem 1.25rem',
+                borderRadius: 8,
+                border: 'none',
+                background: t.accent,
+                color: t.bg,
+                fontWeight: 600,
+                fontSize: '0.9rem',
+                cursor: loading || !input.trim() ? 'not-allowed' : 'pointer',
+                opacity: loading || !input.trim() ? 0.6 : 1,
+                transition: 'all 200ms ease',
+                whiteSpace: 'nowrap',
+              }}
+              onMouseEnter={(e) => {
+                if (!loading && input.trim()) {
+                  e.target.style.opacity = '0.85';
+                  e.target.style.transform = 'translateY(-1px)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!loading && input.trim()) {
+                  e.target.style.opacity = '1';
+                  e.target.style.transform = 'translateY(0)';
+                }
+              }}
+            >
+              Send
+            </button>
+            <button
+              onClick={clearChat}
+              disabled={loading || messages.length === 0}
+              style={{
+                padding: '0.5rem 0.75rem',
+                borderRadius: 6,
+                border: `1px solid ${t.border}`,
+                background: 'transparent',
+                color: t.textMuted,
+                fontWeight: 500,
+                fontSize: '0.75rem',
+                cursor: loading || messages.length === 0 ? 'not-allowed' : 'pointer',
+                opacity: loading || messages.length === 0 ? 0.4 : 0.7,
+                transition: 'all 200ms ease',
+                whiteSpace: 'nowrap',
+              }}
+              onMouseEnter={(e) => {
+                if (!loading && messages.length > 0) {
+                  e.target.style.opacity = '1';
+                  e.target.style.borderColor = t.accent;
+                  e.target.style.color = t.accent;
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!loading && messages.length > 0) {
+                  e.target.style.opacity = '0.7';
+                  e.target.style.borderColor = t.border;
+                  e.target.style.color = t.textMuted;
+                }
+              }}
+            >
+              Clear
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <style>{`
+        @keyframes slideIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulse {
+          0%, 100% { opacity: 0.6; }
+          50% { opacity: 1; }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+// ── Main App ──────────────────────────────────────────────────────────────────
+
+function App() {
+  const sysTheme = useSystemTheme();
+  const [tweaks, setTweaksState] = useState(TWEAK_DEFAULTS);
+  const [showTweaks, setShowTweaks] = useState(false);
+
+  const effectiveTheme = tweaks.theme === 'system' ? sysTheme : tweaks.theme;
+  const t = buildTheme(effectiveTheme, tweaks.accent);
+
+  const setTweak = (key, val) => {
+    setTweaksState(prev => {
+      const next = { ...prev, [key]: val };
+      window.parent.postMessage({ type: '__edit_mode_set_keys', edits: next }, '*');
+      return next;
+    });
+  };
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.data?.type === '__activate_edit_mode') setShowTweaks(true);
+      if (e.data?.type === '__deactivate_edit_mode') setShowTweaks(false);
+    };
+    window.addEventListener('message', handler);
+    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+    return () => window.removeEventListener('message', handler);
+  }, []);
+
+  return (
+    <>
+      <ChatApp t={t} apiUrl={tweaks.apiUrl} />
+      {showTweaks && (
+        <div style={{
+          position: 'fixed',
+          bottom: '1.5rem',
+          right: '1.5rem',
+          zIndex: 9999,
+          width: 280,
+          background: 'oklch(15% 0.018 45)',
+          border: '1px solid oklch(25% 0.02 45)',
+          borderRadius: 12,
+          boxShadow: '0 20px 48px oklch(0% 0 0 / 55%)',
+          overflow: 'hidden',
+          fontFamily: '"DM Sans", sans-serif',
+        }}>
+          <div style={{
+            padding: '0.875rem 1.25rem',
+            borderBottom: '1px solid oklch(25% 0.02 45)',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}>
+            <p style={{
+              fontWeight: 600,
+              fontSize: '0.85rem',
+              color: 'oklch(85% 0.008 50)',
+              margin: 0,
+            }}>Chat Settings</p>
+            <button
+              onClick={() => {
+                setShowTweaks(false);
+                window.parent.postMessage({ type: '__edit_mode_dismissed' }, '*');
+              }}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                color: 'oklch(50% 0.008 50)',
+                fontSize: '1.2rem',
+                lineHeight: 1,
+                padding: '0 0.25rem',
+              }}
+            >×</button>
+          </div>
+          <div style={{
+            padding: '1.125rem 1.25rem',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '1.25rem',
+            fontSize: '0.85rem',
+          }}>
+            <div>
+              <p style={{
+                fontSize: '0.68rem',
+                fontWeight: 600,
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+                color: 'oklch(50% 0.008 50)',
+                marginBottom: '0.5rem',
+                margin: 0,
+              }}>Theme</p>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                {['system', 'light', 'dark'].map(k => (
+                  <button
+                    key={k}
+                    onClick={() => setTweak('theme', k)}
+                    style={{
+                      flex: 1,
+                      padding: '0.45rem 0.5rem',
+                      borderRadius: 7,
+                      border: `1px solid ${tweaks.theme === k ? t.accent : 'oklch(25% 0.02 45)'}`,
+                      background: tweaks.theme === k ? t.accentBg : 'transparent',
+                      color: tweaks.theme === k ? t.accent : 'oklch(50% 0.008 50)',
+                      fontFamily: 'inherit',
+                      fontSize: '0.75rem',
+                      fontWeight: 500,
+                      cursor: 'pointer',
+                      textTransform: 'capitalize',
+                      transition: 'all 150ms ease',
+                    }}
+                  >{k}</button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p style={{
+                fontSize: '0.68rem',
+                fontWeight: 600,
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+                color: 'oklch(50% 0.008 50)',
+                marginBottom: '0.5rem',
+                margin: 0,
+              }}>Accent</p>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                {Object.entries(ACCENTS).map(([k, v]) => (
+                  <button
+                    key={k}
+                    onClick={() => setTweak('accent', k)}
+                    style={{
+                      flex: 1,
+                      padding: '0.45rem 0.5rem',
+                      borderRadius: 7,
+                      border: `1px solid ${tweaks.accent === k ? v.main : 'oklch(25% 0.02 45)'}`,
+                      background: tweaks.accent === k ? v.dark : 'transparent',
+                      color: tweaks.accent === k ? v.main : 'oklch(50% 0.008 50)',
+                      fontFamily: 'inherit',
+                      fontSize: '0.75rem',
+                      fontWeight: 500,
+                      cursor: 'pointer',
+                      textTransform: 'capitalize',
+                      transition: 'all 150ms ease',
+                    }}
+                  >{k}</button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <label style={{
+                fontSize: '0.68rem',
+                fontWeight: 600,
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+                color: 'oklch(50% 0.008 50)',
+                marginBottom: '0.5rem',
+                display: 'block',
+                margin: 0,
+              }}>API URL</label>
+              <input
+                value={tweaks.apiUrl}
+                onChange={(e) => setTweak('apiUrl', e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '0.5rem',
+                  borderRadius: 6,
+                  border: `1px solid oklch(25% 0.02 45)`,
+                  background: 'oklch(18% 0.02 45)',
+                  color: 'oklch(85% 0.008 50)',
+                  fontFamily: 'inherit',
+                  fontSize: '0.75rem',
+                  outline: 'none',
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
