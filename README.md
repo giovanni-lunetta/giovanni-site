@@ -1,46 +1,39 @@
-# Giovanni Lunetta - Personal Site & AI Companion
+# Giovanni Lunetta — Personal Site
 
-This is the personal website and AI companion project for Giovanni Lunetta. It features a static portfolio site and an embedded AI chat interface powered by a Python backend.
+Personal portfolio and AI chat companion for [giovannilunetta.com](https://giovannilunetta.com).
 
-## Project Structure
+## Structure
 
-- **Root Directory**: Contains the static HTML files (`index.html`, `chat.html`, `resume.html`) for the website.
-- **`assets/`**: Stores static assets like images, PDFs (resume), and stylesheets.
-- **`my_app/`**: Contains the source code for the AI companion application (Python/Gradio).
-- **`scripts/`**: Helper scripts for maintenance tasks.
-
-## Getting Started
-
-### Running the Website Locally
-
-To view the static website locally, you can use Python's built-in HTTP server:
-
-```bash
-python3 -m http.server
+```
+/
+├── index.html          # Main portfolio (Home, Hobbies, Resume, Chat pages)
+├── chat.html           # Standalone AI chat interface
+├── resume.pdf          # Resume (PDF)
+├── resume.md           # Resume (full markdown — chatbot context)
+├── resume_condensed.md # Resume (condensed markdown — chatbot context)
+├── favicon.ico         # Site favicon
+├── netlify.toml        # Netlify config (publish = ".")
+├── my_app/             # Python AI chat backend
+├── .env                # Local environment variables (not committed)
+└── .env.example        # Environment variable template
 ```
 
-Then open [http://localhost:8000](http://localhost:8000) in your browser.
-
-### Running the AI App
-
-The AI application code resides in `my_app/`. Refer to `my_app/README.md` for specific instructions on running and deploying the Python application.
-
-## Maintenance
-
-### Syncing the Resume
-
-The master copy of the resume is located in `my_app/me/resume.pdf`. To update the website's version (`assets/resume.pdf`), run the sync script:
+## Running Locally
 
 ```bash
-./scripts/sync_resume.sh
+python3 -m http.server 8080
 ```
 
-### Environment Setup
+Open [http://localhost:8080](http://localhost:8080).
 
-Create a local environment file from `.env.example` and fill in your real values:
+## AI Chat Backend
 
-```bash
-cp .env.example .env
-```
+The chat backend lives in `my_app/`. See `API_SETUP.md` (in `my_app/`) for setup instructions. The `chat.html` frontend calls the API URL configured in its `TWEAK_DEFAULTS`.
 
-Do not commit real API keys.
+## Deployment
+
+Deployed via Netlify. Push to `main` triggers a deploy automatically. No build step — Netlify serves the repo root directly.
+
+## Environment Variables
+
+Copy `.env.example` to `.env` and fill in your values. Never commit `.env`.
