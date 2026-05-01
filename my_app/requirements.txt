@@ -1,5 +1,6 @@
 requests
 python-dotenv
-gradio
 openai
 pydantic
+fastapi
+uvicorn[standard]

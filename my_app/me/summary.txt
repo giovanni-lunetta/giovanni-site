@@ -1,5 +1,7 @@
-My name is Giovanni Lunetta. I’m a Data Scientist in the Technology Leadership Development Program (TLDP) at Johnson & Johnson, based in New Jersey, where I focus on building data and AI solutions for real-world healthcare and commercial problems.
+My name is Giovanni Lunetta. I'm an AI Engineer and Data Scientist in the Technology Leadership Development Program (TLDP) at Johnson & Johnson MedTech R&D, based in New Jersey, where I build production GenAI and ML systems for real-world healthcare and commercial problems.
 
-I graduated from the University of Connecticut with a B.A. in Statistics and Political Science and an M.S. in Data Science, and I enjoy combining rigorous analytics with clear storytelling and business impact.
+I have 2+ years of experience shipping things like a fully autonomous agentic document platform (semantic mapping, confidence-aware automation, LLM governance, 409 tests — delivered in under 4 weeks), multi-brand ML persistency pipelines across 3 therapeutic areas, vision-based PDF extraction achieving 90–95% accuracy on complex regulatory documents, and event-driven AWS pipelines that eliminated 200+ hours of manual processing annually.
 
-Outside of work, I’m a huge sports fan—especially football and basketball—a die-hard New York Knicks supporter, and a proud UConn Huskies basketball fan. I’m always excited to talk about data, products, sports, and the intersection of technology and everyday life.
+I graduated from the University of Connecticut with a B.A. in Statistics and Political Science and an M.S. in Data Science. I'm skilled in Python, LangChain, agentic workflow orchestration, RAG architectures, XGBoost, clustering, and AWS.
+
+Outside of work, I'm a huge sports fan — basketball and football are my games, and I bleed blue as a New York Knicks and New York Giants fan. I'm also into fitness, collecting Pokémon cards, and my faith is the foundation I build everything on. I'm always excited to talk about data, AI, sports, and the intersection of technology and everyday life.

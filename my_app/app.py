@@ -3,10 +3,12 @@ from openai import OpenAI
 import json
 import os
 import requests
-import gradio as gr
 from pydantic import BaseModel
 from pathlib import Path
 from datetime import datetime, timezone
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+import uvicorn
 
 
 load_dotenv(override=True)
@@ -62,8 +64,7 @@ record_user_details_json = {
             "name": {
                 "type": "string",
                 "description": "The user's name, if they provided it"
-            }
-            ,
+            },
             "notes": {
                 "type": "string",
                 "description": "Any additional information about the conversation that's worth recording to give context"
@@ -97,6 +98,16 @@ tools = [{"type": "function", "function": record_user_details_json},
 class Evaluation(BaseModel):
     is_acceptable: bool
     feedback: str
+
+
+class ChatRequest(BaseModel):
+    message: str
+    history: list = []
+
+
+class ChatResponse(BaseModel):
+    reply: str
+    success: bool = True
 
 
 class Me:
@@ -196,7 +207,6 @@ class Me:
         except Exception as e:
             print(f"Gemini model discovery failed ({e}); using '{preferred_model}'", flush=True)
             return preferred_model
-
 
     # Whitelist of allowed tool functions to prevent arbitrary code execution
     ALLOWED_TOOLS = {
@@ -380,7 +390,7 @@ The Agent has been provided with context on {self.name} in the form of their sum
     MAX_TOOL_ITERATIONS = 10
 
     def chat(self, message, history):
-        # Clean up history format (in case Gradio adds extra fields)
+        # Clean up history format
         history = [{"role": h.get("role", "user"), "content": h.get("content", "")} for h in history]
         
         # Generate initial response
@@ -414,171 +424,76 @@ The Agent has been provided with context on {self.name} in the form of their sum
             # Retry with feedback
             reply = self.rerun(reply, message, history, evaluation.feedback)
             return reply
-    
 
-if __name__ == "__main__":
+
+# FastAPI App Setup
+app = FastAPI(
+    title="Giovanni's AI Chat API",
+    description="API for chatting with an AI trained on Giovanni's context",
+    version="1.0.0"
+)
+
+# CORS Configuration
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://giovannilunetta.com",
+        "http://localhost:3000",
+        "http://localhost:8000",
+        "http://localhost:8080",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Initialize Me instance
+try:
     me = Me()
+except EnvironmentError as e:
+    print(f"Failed to initialize: {e}", flush=True)
+    me = None
 
-    examples = [
-        "What kinds of roles are you interested in after TLDP?",
-        "Tell me about a data science project you're proud of.",
-        "What kind of problems do you enjoy solving?",
-        "What tools and technologies do you use most often?",
-    ]
 
-    # Custom CSS to match the website's Cobalt sky theme
-    custom_css = """
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@app.get("/health")
+async def health_check():
+    """Health check endpoint"""
+    return {"status": "ok", "service": "Giovanni's AI Chat API"}
 
-    .gradio-container {
-        background: linear-gradient(135deg, #021008 0%, #021008 100%) !important;
-        font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+
+@app.post("/chat", response_model=ChatResponse)
+async def chat(request: ChatRequest):
+    """
+    Chat endpoint that accepts a message and conversation history.
+    
+    Request body:
+    {
+        "message": "Your question here",
+        "history": [{"role": "user", "content": "..."}, {"role": "assistant", "content": "..."}]
     }
-
-    .contain {
-        max-width: 900px !important;
-        margin: 0 auto !important;
-    }
-
-    /* Main title */
-    .gradio-container h1 {
-        color: #ffffff !important;
-        text-align: center !important;
-        font-size: 2.5rem !important;
-        font-weight: 700 !important;
-        text-shadow: 0 0 20px rgba(52, 211, 153, 0.3);
-        margin-bottom: 0.25rem !important;
-    }
-
-    /* All headings inherit theme colors */
-    .gradio-container h2, .gradio-container h3 {
-        color: #ffffff !important;
-    }
-
-    /* Markdown text */
-    .gradio-container .markdown {
-        color: #c8dce8 !important;
-    }
-
-    /* Subtitle styling */
-    .subtitle {
-        text-align: center !important;
-        font-size: 1.05rem !important;
-        color: #6D8196 !important;
-        margin-bottom: 1.5rem !important;
-    }
-
-    /* Hide the "Chatbot" tab label */
-    .tabs, .tab-nav {
-        display: none !important;
-    }
-
-    /* Chat area */
-    .chatbot {
-        background: rgba(15, 118, 110, 0.15) !important;
-        border: 1px solid rgba(52, 211, 153, 0.2) !important;
-        border-radius: 12px !important;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
-        min-height: 400px !important;
-    }
-
-    /* User messages */
-    .message.user {
-        background: linear-gradient(135deg, #0F766E 0%, #064e3b 100%) !important;
-        border-radius: 12px !important;
-    }
-
-    /* Bot messages */
-    .message.bot {
-        background: rgba(15, 118, 110, 0.25) !important;
-        border: 1px solid rgba(52, 211, 153, 0.15) !important;
-        border-radius: 12px !important;
-    }
-
-    /* Input area */
-    textarea, input {
-        background: rgba(15, 118, 110, 0.15) !important;
-        border: 2px solid rgba(52, 211, 153, 0.3) !important;
-        color: #ffffff !important;
-        border-radius: 8px !important;
-        transition: all 0.3s ease !important;
-    }
-
-    textarea:focus, input:focus {
-        border-color: #34D399 !important;
-        box-shadow: 0 0 15px rgba(52, 211, 153, 0.3) !important;
-        outline: none !important;
-    }
-
-    textarea::placeholder {
-        color: #6D8196 !important;
-    }
-
-    /* Send button */
-    button.primary, button[class*="submit"] {
-        background: linear-gradient(135deg, #0F766E 0%, #064e3b 100%) !important;
-        color: #ffffff !important;
-        border: none !important;
-        border-radius: 8px !important;
-        font-weight: 500 !important;
-        transition: all 0.3s ease !important;
-        box-shadow: 0 2px 10px rgba(15, 118, 110, 0.3) !important;
-    }
-
-    button.primary:hover, button[class*="submit"]:hover {
-        transform: translateY(-1px) !important;
-        box-shadow: 0 4px 20px rgba(52, 211, 153, 0.4) !important;
-    }
-
-    /* Example prompt buttons */
-    .examples button {
-        background: rgba(15, 118, 110, 0.15) !important;
-        border: 1px solid rgba(52, 211, 153, 0.25) !important;
-        color: #34D399 !important;
-        border-radius: 8px !important;
-        font-size: 0.9rem !important;
-        transition: all 0.25s ease !important;
-    }
-
-    .examples button:hover {
-        border-color: #34D399 !important;
-        background: rgba(52, 211, 153, 0.08) !important;
-        transform: translateY(-1px) !important;
-    }
-
-    /* Footer */
-    .footer-note {
-        text-align: center !important;
-        font-size: 0.85rem !important;
-        opacity: 0.6;
-        margin-top: 2rem !important;
-        color: #6D8196 !important;
-    }
-
-    /* Labels */
-    label, .label-wrap {
-        color: #c8dce8 !important;
+    
+    Returns:
+    {
+        "reply": "AI response here",
+        "success": true
     }
     """
+    if me is None:
+        raise HTTPException(status_code=500, detail="AI service not initialized. Check environment variables.")
+    
+    if not request.message or not request.message.strip():
+        raise HTTPException(status_code=400, detail="Message cannot be empty")
+    
+    try:
+        reply = me.chat(request.message, request.history)
+        return ChatResponse(reply=reply, success=True)
+    except Exception as e:
+        print(f"Chat error: {e}", flush=True)
+        raise HTTPException(status_code=500, detail=f"Chat failed: {str(e)}")
 
-    with gr.Blocks(css=custom_css, theme=gr.themes.Base()) as demo:
-        gr.Markdown(f"# Chat with {me.name}")
-        gr.Markdown(
-            "I'm an AI version of Giovanni, a Data Scientist and TLDP analyst at Johnson & Johnson. "
-            "Ask me about my experience, projects, and what I'm looking for next.",
-            elem_classes="subtitle"
-        )
 
-        gr.ChatInterface(
-            me.chat,
-            type="messages",
-            examples=examples,
-
-        )
-
-        gr.Markdown(
-            "_Powered by OpenAI and Gradio \u00b7 This is an AI representation of Giovanni, not live human chat._",
-            elem_classes="footer-note"
-        )
-
-    demo.launch()
+if __name__ == "__main__":
+    # Run with: uvicorn app:app --host 0.0.0.0 --port 7860
+    # Or locally: python app.py
+    port = int(os.getenv("PORT", 7860))
+    uvicorn.run(app, host="0.0.0.0", port=port)
