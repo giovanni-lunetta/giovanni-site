@@ -164,9 +164,9 @@ function Footer({ t }) {
 // ── Home ──────────────────────────────────────────────────────────────────────
 
 const PROJECTS = [
-  { n: '01', title: 'Surgical Workflow Analytics', desc: 'Clustering and preference modeling from surgical log data — turning complex operational records into actionable business intelligence for strategic planning.', tags: ['Clustering', 'Python', 'Tableau'] },
-  { n: '02', title: 'Rare Disease Patient Segmentation', desc: 'Feature engineering and unsupervised learning to identify treatment patterns across rare disease populations, supporting precision medicine strategy.', tags: ['Segmentation', 'ML', 'Healthcare'] },
-  { n: '03', title: 'GenAI & Document Understanding', desc: 'RAG pipelines, structured extraction, and evaluation workflows. Harnessing LLMs to unlock insight from unstructured data at enterprise scale.', tags: ['RAG', 'LLMs', 'Evaluation'] },
+  { n: '01', title: 'Agentic Document Intelligence Platform', desc: 'Fully autonomous agentic onboarding platform enabling business users to discover automation opportunities and generate production-ready extraction rules — no data science involvement required. Two operating modes, semantic-first mapping, confidence-aware automation, LLM governance with per-call audit trails, and Flask UI with SSE streaming. Delivered production-hardened with 409 tests in 3–4 weeks.', tags: ['LangChain', 'Agentic AI', 'Python', 'Flask'] },
+  { n: '02', title: 'Persistency Modeling — Multi-Brand ML', desc: 'Multi-brand ML pipelines across 3 therapeutic areas — integrating millions of patient records, engineering leakage-safe features, and training XGBoost models (ROC-AUC up to 0.782, 12.9x lift) that outperformed vendor pipelines and directly informed medical affairs and market access strategy.', tags: ['XGBoost', 'Kedro', 'Healthcare', 'Python'] },
+  { n: '03', title: 'Hack4Health — SURiA', desc: 'Voice-activated, offline-capable AI assistant supporting surgical teams in the OR with real-time guidance and automation. Placed Top 3 in MedTech category and selected for Proof-of-Concept funding — one of only three teams chosen across all of MedTech at Hack4Health 2025.', tags: ['GenAI', 'Voice AI', 'MedTech'] },
 ];
 
 function ProjectRow({ n, title, desc, tags, t }) {
@@ -263,7 +263,7 @@ function HomePage({ t, setPage }) {
 // ── Hobbies ───────────────────────────────────────────────────────────────────
 
 const HOBBIES = [
-  { n: '01', title: 'Sports & Athletics', tags: ['Basketball', 'Soccer', 'Table Tennis', 'Volleyball'], body: "Highly competitive and always have been. Whether it's a pickup basketball game, an intramural soccer league, or a table tennis grudge match — I thrive on competition, teamwork, and the physical challenge." },
+  { n: '01', title: 'Sports & Athletics', tags: ['Basketball', 'Football', 'Knicks', 'Giants'], body: "Highly competitive and always have been. Basketball is my sport — I love the game at every level. Football runs deep too; I bleed blue as a Knicks and Giants fan. Whether it's a pickup game or watching my teams battle it out, competition is where I'm in my element." },
   { n: '02', title: 'Pokémon Collecting', tags: ['TCG', 'Sealed', 'PSA Grading'], body: "Started collecting as a kid, got serious again as an adult. My collection is massive. I love the blend of nostalgia, community, and the surprisingly deep market dynamics behind sealed investing." },
   { n: '03', title: 'Faith & Relationships', tags: ['Christianity', 'Community', 'Family'], body: "Faith is my foundation. I invest deeply in the people around me — my girlfriend, family, church community — and I try to lead with grace and purpose in everything I do." },
   { n: '04', title: 'Fitness', tags: ['Weightlifting', 'Consistency'], body: "The gym is my daily reset. Show up, put in the work, improve steadily. The same philosophy I try to bring to everything else." },
