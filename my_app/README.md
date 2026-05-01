@@ -1,13 +1,9 @@
 ---
 title: career_conversation
-app_file: app.py
-sdk: gradio
-sdk_version: 5.34.2
+sdk: docker
 ---
 
 ## Local Development
-
-From the repository root:
 
 ```bash
 cd my_app
@@ -28,6 +24,6 @@ python app.py
 - `CHAT_MODEL`: default `gpt-4o-mini`.
 - `EVAL_MODEL`: default `gpt-4o-mini`.
 - `GEMINI_EVALUATOR_MODEL`: default `gemini-3.1-flash-lite-preview`.
-- `GEMINI_EVALUATOR_FALLBACK_MODELS`: comma-separated fallback list used if the preferred Gemini model is unavailable.
-- `PUSHOVER_TOKEN`: enables notification pushes.
-- `PUSHOVER_USER`: enables notification pushes.
+- `GEMINI_EVALUATOR_FALLBACK_MODELS`: comma-separated fallback list.
+- `PUSHOVER_TOKEN`: enables Pushover notifications.
+- `PUSHOVER_USER`: enables Pushover notifications.
