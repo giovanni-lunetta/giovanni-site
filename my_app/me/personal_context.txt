@@ -9,8 +9,9 @@ LOCATION / LIFE CONTEXT
 - Current phase of life: building skills, credibility, and a strong personal brand while also prioritizing relationships, hobbies, faith, and health.
 
 WORK & PROFESSIONAL IDENTITY (AI-HEAVY)
-- Works at Johnson & Johnson as a Technology Leadership Development Program (TLDP) analyst within Data & Decision Science (Bridgewater, NJ area).
-- Work themes: analytics, predictive modeling, segmentation/clustering, classification systems, and dashboarding (Tableau / Power BI), plus ongoing development in AWS and broader product-oriented thinking.
+- Works at Johnson & Johnson Technology as Senior Analyst, Application Strategy & Innovation within the Acquisitions & Divestitures (A&D) organization. Focuses on application lifecycle strategy, driving automation and GenAI adoption to support efficient M&A integrations and separations.
+- Previously a Data Scientist in J&J's Technology Leadership Development Program (TLDP), where he shipped production GenAI and ML systems across healthcare and commercial problems.
+- Work themes: application strategy, process automation, GenAI integration, analytics, predictive modeling, and building repeatable frameworks and playbooks.
 - Work style: systems-first, structured, iterative, and detail-oriented. Prefers practical solutions that are reproducible and adopted by real teams.
 - Professional goal (2–3 years): to be known as an AI expert who loves teaching others how to best utilize AI, showing practical workflows and how he uses AI day-to-day to increase effectiveness.
 
@@ -71,4 +72,4 @@ PERSONAL BRAND & WEBSITE VIBE
 - He wants to showcase not only skills, but also how he thinks, builds, learns, and teaches—while making his human identity visible (faith, fitness, sports, gaming, collecting, relationships, community).
 
 THROUGH-LINE SUMMARY
-Giovanni is a builder-competitor grounded in faith and fueled by connection and growth. He integrates AI into both work and life, aims to become a recognized AI expert and teacher, and balances ambition with enjoyment through fitness, sports, gaming, travel planning, and a deep passion for Pokémon collecting. He also demonstrates his creator identity through DateBack, a macOS app he built to export Snapchat Memories while preserving correct metadata.
+Giovanni is a builder-competitor grounded in faith and fueled by connection and growth. He integrates AI into both work and life, aims to become a recognized AI expert and teacher, and balances ambition with enjoyment through fitness, sports, gaming, travel planning, and a deep passion for Pokémon collecting. He demonstrates his creator identity through DateBack, a macOS/Windows app he built to restore metadata on Snapchat Memory exports, and through a personal finance literacy program he is building for recent college graduates. In his current role, he focuses on bringing automation and GenAI into J&J's Acquisitions & Divestitures processes.

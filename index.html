@@ -164,10 +164,31 @@ function Footer({ t }) {
 
 // ── Home ──────────────────────────────────────────────────────────────────────
 
+const PERSONAL_PROJECTS = [
+  {
+    n: '01',
+    title: 'DateBack',
+    desc: "A free desktop app for macOS and Windows that restores the original date metadata Snapchat overwrites during export, then organizes memories into dated folders. Built because the tool didn't exist.",
+    tags: ['Electron', 'Python', 'macOS', 'Windows'],
+    link: 'https://dateback.app',
+    linkLabel: 'dateback.app ↗',
+    meta: 'v1.5.3 · 26 releases',
+  },
+  {
+    n: '02',
+    title: 'Personal Finance Boot Camp',
+    desc: 'An 8-session financial literacy curriculum for recent college graduates, delivered as live in-person workshops. Covers credit cards, brokerage accounts, Roth IRA, 401k, student loans, budgeting, and points maximization.',
+    tags: ['React', 'Education', 'Financial Literacy'],
+    link: null,
+    linkLabel: null,
+    meta: '8 sessions · Live workshops',
+  },
+];
+
 const PROJECTS = [
   { n: '01', title: 'Agentic Document Intelligence Platform', desc: 'Fully autonomous agentic onboarding platform enabling business users to discover automation opportunities and generate production-ready extraction rules — no data science involvement required. Two operating modes, semantic-first mapping, confidence-aware automation, LLM governance with per-call audit trails, and Flask UI with SSE streaming. Delivered production-hardened with 409 tests in 3–4 weeks.', tags: ['LangChain', 'Agentic AI', 'Python', 'Flask'] },
-  { n: '02', title: 'Persistency Modeling — Multi-Brand ML', desc: 'Multi-brand ML pipelines across 3 therapeutic areas — integrating millions of patient records, engineering leakage-safe features, and training XGBoost models (ROC-AUC up to 0.782, 12.9x lift) that outperformed vendor pipelines and directly informed medical affairs and market access strategy.', tags: ['XGBoost', 'Kedro', 'Healthcare', 'Python'] },
-  { n: '03', title: 'Hack4Health — SURiA', desc: 'Voice-activated, offline-capable AI assistant supporting surgical teams in the OR with real-time guidance and automation. Placed Top 3 in MedTech category and selected for Proof-of-Concept funding — one of only three teams chosen across all of MedTech at Hack4Health 2025.', tags: ['GenAI', 'Voice AI', 'MedTech'] },
+  { n: '02', title: 'Persistency Modeling — Multi-Brand ML', desc: 'Multi-brand ML pipelines across 3 therapeutic areas — integrating millions of patient records, engineering leakage-safe features, and training XGBoost models (ROC-AUC=0.769, F1=0.687, 16.7x lift) that outperformed vendor pipelines and directly informed medical affairs and market access strategy.', tags: ['XGBoost', 'Kedro', 'Healthcare', 'Python'] },
+  { n: '03', title: 'Hack4Health — SSCP Agent', desc: 'Architected a 7-agent pipeline transforming EU MDR regulatory documents into explainable clinical device recommendations at the point of care — dual-audience output (HCP + patient), 10 guardrail rules, keyword + LLM safety gate, multi-turn Flask UI with simulated EHR integration, and competitive intelligence analytics.', tags: ['Agentic AI', 'GenAI', 'Flask', 'MedTech'] },
 ];
 
 function ProjectRow({ n, title, desc, tags, t }) {
@@ -183,6 +204,24 @@ function ProjectRow({ n, title, desc, tags, t }) {
         </div>
       </div>
     </div>
+  );
+}
+
+function PersonalProjectCard({ n, title, desc, tags, link, linkLabel, meta, t }) {
+  const [hov, setHov] = useState(false);
+  return (
+    <article onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)} style={{ padding: '1.75rem', borderRadius: 12, background: t.surface, border: `1px solid ${hov ? t.accent : t.border}`, display: 'flex', flexDirection: 'column', transition: 'border-color 200ms ease, background 350ms ease' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+        <span style={{ fontFamily: '"DM Serif Display", serif', fontSize: '1.75rem', color: t.border, lineHeight: 1, transition: 'color 350ms ease' }}>{n}</span>
+        {meta && <span style={{ fontFamily: '"DM Sans", sans-serif', fontSize: '0.68rem', fontWeight: 600, color: t.textFaint, letterSpacing: '0.08em', textTransform: 'uppercase', transition: 'color 350ms ease' }}>{meta}</span>}
+      </div>
+      <h3 style={{ fontFamily: '"DM Serif Display", serif', fontSize: 'clamp(1.2rem, 3vw, 1.5rem)', color: t.text, letterSpacing: '-0.015em', marginBottom: '0.6rem', transition: 'color 350ms ease' }}>{title}</h3>
+      <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: '0.88rem', color: t.textMuted, lineHeight: 1.75, marginBottom: '1rem', flex: 1, transition: 'color 350ms ease' }}>{desc}</p>
+      <div style={{ display: 'flex', gap: '0.45rem', flexWrap: 'wrap' }}>
+        {tags.map(tag => <Tag key={tag} t={t}>{tag}</Tag>)}
+      </div>
+      {link && <a href={link} target="_blank" rel="noopener noreferrer" style={{ marginTop: '1rem', fontFamily: '"DM Sans", sans-serif', fontSize: '0.82rem', fontWeight: 600, color: t.accent, transition: 'color 350ms ease' }}>{linkLabel}</a>}
+    </article>
   );
 }
 
@@ -203,13 +242,13 @@ function HomePage({ t, setPage }) {
     <main style={{ flex: 1 }}>
       {/* Hero */}
       <section style={{ maxWidth: 1100, margin: '0 auto', padding: `${mobile ? '3.5rem' : '6rem'} ${px} ${mobile ? '3rem' : '5rem'}`, borderBottom: `1px solid ${t.border}`, transition: 'border-color 350ms ease' }}>
-        <Overline t={t}>Data Scientist · Builder · Competitor</Overline>
+        <Overline t={t}>AI & App Strategy · Builder · Competitor</Overline>
         <h1 style={{ fontFamily: '"DM Serif Display", serif', fontSize: 'clamp(3rem, 11vw, 6.5rem)', lineHeight: 1.0, letterSpacing: '-0.025em', color: t.text, marginBottom: '1.5rem', transition: 'color 350ms ease' }}>
           Giovanni<br />Lunetta.
         </h1>
         <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: mobile ? '1rem' : '1.075rem', lineHeight: 1.85, color: t.textMuted, maxWidth: '52ch', marginBottom: '2rem', transition: 'color 350ms ease' }}>
-          Data Scientist at J&amp;J, builder of things that don't exist yet, and someone who genuinely
-          believes AI should be useful to real people — not just impressive on paper.
+          AI and data professional at J&amp;J, builder of things that don't exist yet, and someone who genuinely
+          believes technology should be useful to real people — not just impressive on paper.
         </p>
         <div style={{ display: 'flex', gap: '0.875rem', flexWrap: 'wrap' }}>
           <PrimaryBtn t={t} onClick={() => setPage('resume')}>View Resume</PrimaryBtn>
@@ -221,17 +260,17 @@ function HomePage({ t, setPage }) {
       <section style={{ maxWidth: 1100, margin: '0 auto', padding: `${mobile ? '2.5rem' : '4rem'} ${px} ${mobile ? '3rem' : '5rem'}`, borderBottom: `1px solid ${t.border}`, transition: 'border-color 350ms ease' }}>
         <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: '0.25rem', gap: '1rem' }}>
           <h2 style={{ fontFamily: '"DM Serif Display", serif', fontSize: 'clamp(1.75rem, 5vw, 2.5rem)', color: t.text, letterSpacing: '-0.02em', transition: 'color 350ms ease' }}>Selected Work</h2>
-          <span style={{ fontFamily: '"DM Sans", sans-serif', fontSize: '0.72rem', fontWeight: 600, letterSpacing: '0.1em', color: t.textFaint, textTransform: 'uppercase', whiteSpace: 'nowrap', transition: 'color 350ms ease' }}>J&amp;J TLDP</span>
+          <span style={{ fontFamily: '"DM Sans", sans-serif', fontSize: '0.72rem', fontWeight: 600, letterSpacing: '0.1em', color: t.textFaint, textTransform: 'uppercase', whiteSpace: 'nowrap', transition: 'color 350ms ease' }}>J&amp;J Technology</span>
         </div>
         {PROJECTS.map(p => <ProjectRow key={p.n} {...p} t={t} />)}
+      </section>
 
-        {/* DateBack */}
-        <div style={{ marginTop: '1.75rem', padding: '1.125rem 1.5rem', borderRadius: 10, background: t.bgAlt, border: `1px solid ${t.border}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap', transition: 'background 350ms ease, border-color 350ms ease' }}>
-          <div>
-            <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: '0.875rem', fontWeight: 600, color: t.text, marginBottom: '0.2rem', transition: 'color 350ms ease' }}>DateBack</p>
-            <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: '0.82rem', color: t.textMuted, lineHeight: 1.65, transition: 'color 350ms ease' }}>A macOS app for exporting Snapchat Memories with correct metadata. Built because it didn't exist.</p>
-          </div>
-          <span style={{ fontFamily: '"DM Sans", sans-serif', fontSize: '0.68rem', fontWeight: 600, color: t.textFaint, textTransform: 'uppercase', letterSpacing: '0.09em', whiteSpace: 'nowrap', transition: 'color 350ms ease' }}>Personal</span>
+      {/* Personal Projects */}
+      <section style={{ maxWidth: 1100, margin: '0 auto', padding: `${mobile ? '2.5rem' : '4rem'} ${px} ${mobile ? '3rem' : '5rem'}`, borderBottom: `1px solid ${t.border}`, transition: 'border-color 350ms ease' }}>
+        <Overline t={t}>Outside of Work</Overline>
+        <h2 style={{ fontFamily: '"DM Serif Display", serif', fontSize: 'clamp(1.75rem, 5vw, 2.5rem)', color: t.text, letterSpacing: '-0.02em', marginBottom: '2rem', transition: 'color 350ms ease' }}>Personal Projects</h2>
+        <div style={{ display: 'grid', gridTemplateColumns: mobile ? '1fr' : 'repeat(2, 1fr)', gap: '1.25rem' }}>
+          {PERSONAL_PROJECTS.map(p => <PersonalProjectCard key={p.n} {...p} t={t} />)}
         </div>
       </section>
 
@@ -251,7 +290,7 @@ function HomePage({ t, setPage }) {
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             <InfoCard label="Education" value="M.S. Data Science + B.A. Statistics & Poly Sci — UConn" t={t} />
-            <InfoCard label="Currently" value="Data Scientist @ J&J · TLDP Program" t={t} />
+            <InfoCard label="Currently" value="Senior Analyst, App Strategy & Innovation @ J&J" t={t} />
             <InfoCard label="Location" value="Northern New Jersey" t={t} />
             <InfoCard label="Writing" value={<a href="https://medium.com/@giovannilunetta" target="_blank" rel="noopener noreferrer" style={{ color: t.accent, textDecoration: 'none' }}>medium.com/@giovannilunetta</a>} t={t} />
           </div>
