@@ -1,79 +1,147 @@
-   
-Contact
-[email redacted]
-www.linkedin.com/in/giovanni-
-lunetta (LinkedIn)
-Top Skills
-Data Science
-Prompt Engineering
-LangChain
-Certifications
-Databricks Fundamentals
-LangChain Chat with Your Data
-LangChain for LLM Application
-Development
-Johnson & Johnson Design Thinking
-Challenge
-GenAIBIZ
-Honors-Awards
-2021 New England Scholar
-2022 Babbidge Scolar
-ASA Datafest Best Statistical Insight
 Giovanni Lunetta
-Data Scientist | Healthcare AI | TLDP @ J&J
-Pompton, New Jersey, United States
-Summary
-I build production AI and data systems in healthcare — GenAI
-platforms, ML pipelines, and cloud automation that drive real
-business outcomes.
-At J&J (Technology Leadership Development Program, Data &
-Decision Science), my work spans GenAI document intelligence,
-unsupervised preference modeling for surgical workflows, enterprise
-AWS cost optimization, and ML pipeline validation at scale. I care
-about shipping things that get adopted, not just built.
-Outside of work, I build too: giovannilunetta.com runs a self-
-evaluating dual-LLM system I architected, and DateBack is a macOS
-app I shipped with Apple code signing. M.S. in Data Science from
-UConn.
-Always happy to connect with people working on applied AI — let's
-talk.
-Experience
-Johnson & Johnson
-Technology LDP Analyst
-June 2024 - Present (1 year 9 months)
-Raritan, New Jersey, United States
-GenAI Document Automation: Built a document intelligence platform using
-hybrid retrieval (pgvector + BM25), LLM agents, and schema-based extraction
-— achieving 50% token reduction and enabling faster, more reliable regulatory
-document processing.
-Pre-Surgical Configuration Analytics: Designed unsupervised preference
-models (Fuzzy C-Means) achieving 67% surgical classification (+17 over
-baseline). Delivered Tableau dashboards adopted for clinical decision support.
-  Page 1 of 2
-   
-AWS Cost Optimization: Architected a 3-Lambda event-driven pipeline
-eliminating 200+ hours/year of manual processing, with multi-million dollar cost
-attribution at 85%+ coverage.
-ML Pipeline Validation: Validated a 14-node Kedro ML pipeline (1.3M+
-records, XGBoost, ROC-AUC 0.717) with scalability assessment across
-multiple therapeutic indications.
-HCP Segmentation: Built provider segmentation models (90+ features, K-
-Means/Fuzzy C-Means) and treatment-pattern analytics to inform commercial
-targeting strategy.
-Microsoft 365 Copilot Program: Managed enterprise pilot for 877 users with
-automated lifecycle workflows (Python + Excel macros), reducing processing
-time by 50%.
-Johnson & Johnson
-Technology Intern
-May 2023 - August 2023 (4 months)
-Titusville, New Jersey, United States
-Developed a machine learning model using healthcare claims data to predict
-patient drug eligibility 6 months in advance, optimizing doctor outreach
-targeting and pharmaceutical processes.
-Education
+Experienced Engineer, Data Engineering | AI & Data Professional
+Pequannock, New Jersey, United States
+LinkedIn: linkedin.com/in/giovannilunetta
+
+---
+
+ABOUT
+
+I build production AI and data systems in enterprise healthcare — GenAI platforms, ML pipelines, and cloud automation that drive real business outcomes.
+
+Now driving application strategy and AI-led process modernization within J&J's Acquisitions & Divestitures organization — focused on application lifecycle strategy, automation, and GenAI adoption to support efficient and scalable M&A integrations and separations.
+
+Previously in J&J's Technology Leadership Development Program (Data & Decision Science), my work spanned a fully autonomous agentic document intelligence platform shipped in under 4 weeks, vision-based PDF extraction achieving 90–95% accuracy on complex regulatory documents, multi-brand ML persistency pipelines across 3 therapeutic areas, and enterprise AWS infrastructure eliminating 200+ hours of manual processing annually.
+
+Outside of work, I build too: giovannilunetta.com runs a self-evaluating dual-LLM system I architected, and DateBack is a macOS & Windows app I shipped with Apple code signing. M.S. in Data Science from UConn.
+
+Always happy to connect with people working on applied AI — let's talk.
+
+---
+
+EXPERIENCE
+
+Experienced Engineer, Data Engineering
+Johnson & Johnson Technology — Acquisitions & Divestitures
+May 2026 – Present | New Brunswick, NJ
+
+Driving application lifecycle strategy, automation, and GenAI adoption to support efficient and scalable M&A integrations and separations within J&J's Acquisitions & Divestitures organization.
+
+---
+
+Technology LDP Analyst — Data & Decision Science
+Johnson & Johnson (MedTech R&D)
+June 2024 – May 2026 | Raritan, NJ
+
+Agentic Document Intelligence Platform: Designed and delivered a fully autonomous agentic onboarding platform enabling business users to independently discover automation opportunities and generate production-ready extraction rules — without data science involvement. Two operating modes (Mapping Mode and Explore Mode), confidence-aware automation (AUTO_MAP vs. NEEDS_REVIEW), LLM governance with per-call audit trails, and Flask UI with SSE streaming. Delivered production-hardened with 409 tests in 3–4 weeks.
+
+Vision-Based PDF Extraction: Built GPT-4o multimodal pipeline rendering 400+ page regulatory documents as 300 DPI images to accurately capture complex tables with merged cells and hierarchical structures. Achieved 90–95% accuracy vs. 70–80% text-only, reducing manual processing from 4+ hours to <30 minutes per document.
+
+Persistency Modeling — Multi-Brand ML: Built XGBoost persistency models across 3 therapeutic areas (82K patients, 3.9M patient-weeks, ROC-AUC=0.769, F1=0.687, 16.7x lift) outperforming vendor pipelines. Validated a 14-node Kedro pipeline (1.3M+ records), identifying a critical sampling bug that prevented erroneous model evaluations from reaching production.
+
+Surgical Preference & HCP Segmentation: Delivered surgeon preference classification combining rule-based classification (67% coverage, +23 pts over baseline) with Fuzzy C-Means clustering (silhouette=0.66). Segmented ~10K HCPs into 6 personas adopted by commercial teams for targeted outreach — extended into treatment pattern analysis as a follow-on award.
+
+Product Ownership — Regulatory Document Platform: Led product management across 4+ releases, expanding scope to own all GenAI integration — semantic search, document embeddings, citation extraction, and an LLM consistency testing framework. Selected for the 2025 MedTech Data Science & AI Showcase.
+
+AWS Cost Optimization & Data Engineering: Architected dual 3-Lambda event-driven pipelines (daily + monthly) eliminating 200+ hours/year of manual processing. Attributed $2.3M+ in AWS costs at 85%+ coverage with self-service Tableau dashboards.
+
+Microsoft 365 Copilot Program: Managed enterprise AI rollout for 877 users with automated lifecycle workflows (Python + Excel macros), reducing processing time by 50%.
+
+---
+
+Technology Summer Intern — Data Science
+Johnson & Johnson (Janssen Pharmaceuticals)
+May 2023 – August 2023 | Titusville, NJ
+
+Developed a machine learning model using healthcare claims data to predict patient drug eligibility 6 months in advance, optimizing doctor outreach targeting and pharmaceutical processes.
+
+---
+
+EDUCATION
+
 University of Connecticut
-Master's degree, Data Science · (August 2023 - June 2024)
+Master's degree, Data Science
+August 2023 – June 2024 | GPA: 4.0/4.0
+
 University of Connecticut
-Bachelor of Arts - BA, Statistics & Political Science · (September 2020 - May
-2023)
-  Page 2 of 2
+Bachelor of Arts — Statistics & Political Science (Double Major), Mathematics (Minor)
+September 2020 – May 2023 | GPA: 3.94
+
+---
+
+PROJECTS
+
+AI Portfolio Assistant (Self-Evaluating LLM System)
+Architected production conversational AI using GPT-4o-mini and Gemini 2.0 Flash featuring automated quality control, function calling for lead capture, and self-improving feedback loop. Implemented evaluation retry loop with dual-model assessment (generation vs. evaluation) and JSONL-based analytics for continuous improvement. Deployed via Gradio at giovannilunetta.com.
+
+DateBack (macOS & Windows Application)
+Built production macOS & Windows desktop app (Electron + Python) processing Snapchat exports (50GB+) with EXIF date restoration, batched cloud streaming, and Apple code signing. Full professional distribution (notarization, auto-updates, DMG installer) with 100% offline-first architecture.
+
+Hack4Health — SSCP Clinical Device Recommendation Agent
+Architected a 7-agent pipeline transforming EU MDR regulatory documents into explainable clinical device recommendations at the point of care — dual-audience output (HCP + patient), 10 guardrail rules, keyword + LLM safety gate, multi-turn Flask UI with simulated EHR integration, and competitive intelligence analytics.
+
+---
+
+SKILLS
+
+Agentic AI Development | Artificial Intelligence (AI) | Data Science | Machine Learning | Large Language Models (LLM) | Generative AI | LangChain | LangGraph | Retrieval-Augmented Generation (RAG) | OpenAI API | Prompt Engineering | Natural Language Processing (NLP) | XGBoost | Feature Engineering | Data Engineering | Python | R | SQL | Flask | Kedro | pgvector | Amazon Web Services (AWS) | Cloud Computing | Tableau | Product Management | Project Management | Presentation Skills | Communication
+
+---
+
+LICENSES & CERTIFICATIONS
+
+AI Engineer Agentic Track: The Complete Agent & MCP Course — Udemy (Dec 2025)
+Databricks Fundamentals — Databricks (Oct 2025)
+GenAIBIZ — CertNexus (Sep 2025)
+LLM Basics — Alta3 Research (Sep 2025)
+AWS Certified Cloud Practitioner — Amazon Web Services (Oct 2025, expires Oct 2028)
+Johnson & Johnson Design Thinking Challenge — Babson College (Mar 2025)
+Tableau Desktop Specialist — Tableau (Jan 2025)
+Crucial Conversations For Mastering Dialogue — Crucial Learning (Sep 2024)
+Present With Impact — Dale Carnegie Training (Sep 2024)
+Communication for Product Managers — LinkedIn (Sep 2024)
+Neural Networks and Deep Learning — DeepLearning.AI (Nov 2023)
+Harvard/edX Data Science Professional Certificate — edX / HarvardX
+How Diffusion Models Work — DeepLearning.AI
+LangChain Chat with Your Data — DeepLearning.AI
+LangChain for LLM Application Development — DeepLearning.AI
+ChatGPT Prompt Engineering for Developers — DeepLearning.AI
+Building Systems with the ChatGPT API — DeepLearning.AI
+Machine Learning Specialization — Coursera (May 2023)
+Advance Your Skills in Natural Language Processing — LinkedIn (Jun 2023)
+NLP with Python for Machine Learning Essential Training — LinkedIn (Jun 2023)
+CS50x — CS50 (Aug 2022)
+Bachelor of Arts — University of Connecticut (May 2023)
+
+---
+
+HONORS & AWARDS
+
+2021 New England Scholar
+2022 Babbidge Scholar
+ASA DataFest — Best Statistical Insight
+
+---
+
+COURSES (University of Connecticut)
+
+Advanced Data Manipulation and Analysis w Python (STAT4185)
+Analysis of Experiments (STAT3115Q)
+Applied Linear Algebra (MATH2210Q)
+Applied Statistics for Data Science (STAT5405)
+Combinatorics (MATH3250)
+Data Ethics and Equity (ARE5353)
+Data Mining (CSE5713)
+Data Visualization and Communication (OPIM5605)
+Design of Experiments (STAT3515Q)
+Fundamental Skills for Data Science (GRAD5100)
+Introduction to Data Science (STAT3255)
+Introduction to Deep Learning (OPIM5509)
+Introduction to Machine Learning (CSE5819)
+Introduction to Mathematical Statistics 1 & 2 (STAT3375Q & STAT3445)
+Multivariable Calculus (MATH2110Q)
+Research Design and Measurement for Data Science (ESPY5641)
+Statistical Computing for Data Science (STAT5125)
+Statistical Programming (STAT2255)
+Text Analytics (ESPY5643)
+Transition to Advanced Math (MATH2710)

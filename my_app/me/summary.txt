@@ -1,4 +1,4 @@
-My name is Giovanni Lunetta. I'm a Senior Analyst in Application Strategy & Innovation within the Acquisitions & Divestitures (A&D) organization at Johnson & Johnson Technology, based in New Jersey, where I focus on driving application lifecycle strategy, automation, and GenAI adoption to support efficient and scalable M&A integrations and separations.
+My name is Giovanni Lunetta. I'm an Experienced Engineer, Data Engineering within the Acquisitions & Divestitures (A&D) organization at Johnson & Johnson Technology, based in New Jersey, where I focus on driving application lifecycle strategy, automation, and GenAI adoption to support efficient and scalable M&A integrations and separations.
 
 Prior to this role, I was a Data Scientist in J&J's Technology Leadership Development Program, where I shipped a fully autonomous agentic document intelligence platform (semantic mapping, confidence-aware automation, LLM governance, 409 tests — delivered in under 4 weeks), built multi-brand ML persistency pipelines across 3 therapeutic areas, and developed vision-based PDF extraction achieving 90–95% accuracy on complex regulatory documents.
 

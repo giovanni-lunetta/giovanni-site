@@ -9,7 +9,7 @@ LOCATION / LIFE CONTEXT
 - Current phase of life: building skills, credibility, and a strong personal brand while also prioritizing relationships, hobbies, faith, and health.
 
 WORK & PROFESSIONAL IDENTITY (AI-HEAVY)
-- Works at Johnson & Johnson Technology as Senior Analyst, Application Strategy & Innovation within the Acquisitions & Divestitures (A&D) organization. Focuses on application lifecycle strategy, driving automation and GenAI adoption to support efficient M&A integrations and separations.
+- Works at Johnson & Johnson Technology as Experienced Engineer, Data Engineering within the Acquisitions & Divestitures (A&D) organization. Focuses on application lifecycle strategy, driving automation and GenAI adoption to support efficient M&A integrations and separations.
 - Previously a Data Scientist in J&J's Technology Leadership Development Program (TLDP), where he shipped production GenAI and ML systems across healthcare and commercial problems.
 - Work themes: application strategy, process automation, GenAI integration, analytics, predictive modeling, and building repeatable frameworks and playbooks.
 - Work style: systems-first, structured, iterative, and detail-oriented. Prefers practical solutions that are reproducible and adopted by real teams.
