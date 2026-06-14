@@ -112,16 +112,38 @@ class ChatResponse(BaseModel):
     success: bool = True
 
 
-# Simple in-memory per-client rate limiting for /chat (single-instance deployment)
+# Simple in-memory per-client rate limiting for /chat (single-instance deployment
+# behind one reverse proxy, e.g. HF Spaces - see get_client_id for the trust model).
 RATE_LIMIT_MAX_REQUESTS = 20
 RATE_LIMIT_WINDOW_SECONDS = 300
+RATE_LIMIT_SWEEP_INTERVAL = 100
+RATE_LIMIT_MAX_TRACKED_CLIENTS = 5000
+
 _rate_limit_history: dict[str, list[float]] = defaultdict(list)
+_rate_limit_request_count = 0
+
+
+def _sweep_rate_limit_history(window_start: float) -> None:
+    """Drop entries with no requests inside the current window, bounding dict growth."""
+    stale_keys = [
+        key for key, history in _rate_limit_history.items()
+        if not history or history[-1] < window_start
+    ]
+    for key in stale_keys:
+        del _rate_limit_history[key]
 
 
 def check_rate_limit(client_id: str) -> bool:
     """Return False if client_id has exceeded the request quota for the current window."""
+    global _rate_limit_request_count
     now = time.monotonic()
     window_start = now - RATE_LIMIT_WINDOW_SECONDS
+
+    _rate_limit_request_count += 1
+    if (_rate_limit_request_count % RATE_LIMIT_SWEEP_INTERVAL == 0
+            or len(_rate_limit_history) > RATE_LIMIT_MAX_TRACKED_CLIENTS):
+        _sweep_rate_limit_history(window_start)
+
     history = _rate_limit_history[client_id]
     while history and history[0] < window_start:
         history.pop(0)
@@ -132,9 +154,18 @@ def check_rate_limit(client_id: str) -> bool:
 
 
 def get_client_id(request: Request) -> str:
+    """Identify the client for rate limiting.
+
+    Takes the rightmost X-Forwarded-For entry: behind a single reverse proxy
+    (e.g. HF Spaces), this is the IP the proxy itself observed and appended,
+    which the client cannot spoof - unlike the leftmost entry, which is
+    whatever the client put in the header.
+    """
     forwarded = request.headers.get("x-forwarded-for")
     if forwarded:
-        return forwarded.split(",")[0].strip()
+        candidate = forwarded.split(",")[-1].strip()
+        if candidate:
+            return candidate
     return request.client.host if request.client else "unknown"
 
 
