@@ -11,3 +11,6 @@ dist/
 npm-debug.log*
 .cache/
 .venv/
+
+# Personal/local-only files - never publish
+DO NOT TRACK/
