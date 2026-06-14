@@ -6,12 +6,11 @@ sdk: docker
 ## Local Development
 
 ```bash
-cd my_app
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-cp ../.env.example ../.env
-python app.py
+# Create a .env file in this directory with at least OPENAI_API_KEY=...
+uvicorn app:app --reload --port 7860
 ```
 
 ## Required Environment Variables

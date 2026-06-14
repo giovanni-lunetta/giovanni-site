@@ -2,11 +2,13 @@ from dotenv import load_dotenv
 from openai import OpenAI
 import json
 import os
+import time
 import requests
+from collections import defaultdict
 from pydantic import BaseModel
 from pathlib import Path
 from datetime import datetime, timezone
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
@@ -108,6 +110,32 @@ class ChatRequest(BaseModel):
 class ChatResponse(BaseModel):
     reply: str
     success: bool = True
+
+
+# Simple in-memory per-client rate limiting for /chat (single-instance deployment)
+RATE_LIMIT_MAX_REQUESTS = 20
+RATE_LIMIT_WINDOW_SECONDS = 300
+_rate_limit_history: dict[str, list[float]] = defaultdict(list)
+
+
+def check_rate_limit(client_id: str) -> bool:
+    """Return False if client_id has exceeded the request quota for the current window."""
+    now = time.monotonic()
+    window_start = now - RATE_LIMIT_WINDOW_SECONDS
+    history = _rate_limit_history[client_id]
+    while history and history[0] < window_start:
+        history.pop(0)
+    if len(history) >= RATE_LIMIT_MAX_REQUESTS:
+        return False
+    history.append(now)
+    return True
+
+
+def get_client_id(request: Request) -> str:
+    forwarded = request.headers.get("x-forwarded-for")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return request.client.host if request.client else "unknown"
 
 
 class Me:
@@ -462,16 +490,16 @@ async def health_check():
 
 
 @app.post("/chat", response_model=ChatResponse)
-async def chat(request: ChatRequest):
+async def chat(chat_request: ChatRequest, http_request: Request):
     """
     Chat endpoint that accepts a message and conversation history.
-    
+
     Request body:
     {
         "message": "Your question here",
         "history": [{"role": "user", "content": "..."}, {"role": "assistant", "content": "..."}]
     }
-    
+
     Returns:
     {
         "reply": "AI response here",
@@ -480,16 +508,19 @@ async def chat(request: ChatRequest):
     """
     if me is None:
         raise HTTPException(status_code=500, detail="AI service not initialized. Check environment variables.")
-    
-    if not request.message or not request.message.strip():
+
+    if not check_rate_limit(get_client_id(http_request)):
+        raise HTTPException(status_code=429, detail="Too many requests. Please wait a moment and try again.")
+
+    if not chat_request.message or not chat_request.message.strip():
         raise HTTPException(status_code=400, detail="Message cannot be empty")
-    
+
     try:
-        reply = me.chat(request.message, request.history)
+        reply = me.chat(chat_request.message, chat_request.history)
         return ChatResponse(reply=reply, success=True)
     except Exception as e:
         print(f"Chat error: {e}", flush=True)
-        raise HTTPException(status_code=500, detail=f"Chat failed: {str(e)}")
+        raise HTTPException(status_code=500, detail="Chat failed. Please try again in a moment.")
 
 
 if __name__ == "__main__":
