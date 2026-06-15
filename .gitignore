@@ -14,3 +14,7 @@ npm-debug.log*
 
 # Personal/local-only files - never publish
 DO NOT TRACK/
+
+# AI-context source PDFs (my_app/.gitignore excludes these too; mirrored here
+# since the root repo independently tracks my_app/ as a normal directory)
+my_app/me/*.pdf

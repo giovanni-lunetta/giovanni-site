@@ -6,16 +6,12 @@ Personal portfolio and AI chat companion for [giovannilunetta.com](https://giova
 
 ```
 /
-├── index.html          # Main portfolio (Home, Hobbies, Resume, Chat pages)
-├── chat.html           # Standalone AI chat interface
-├── resume.pdf          # Resume (PDF)
-├── resume.md           # Resume (full markdown — chatbot context)
-├── resume_condensed.md # Resume (condensed markdown — chatbot context)
-├── favicon.ico         # Site favicon
-├── netlify.toml        # Netlify config (publish = ".")
-├── my_app/             # Python AI chat backend
-├── .env                # Local environment variables (not committed)
-└── .env.example        # Environment variable template
+├── index.html      # Main portfolio (Home, Hobbies, Resume, Chat pages)
+├── chat.html       # Standalone AI chat interface
+├── resume.pdf      # Resume (PDF), served on the Resume page
+├── favicon.svg / favicon.png
+├── netlify.toml    # Netlify config (publish = ".")
+└── my_app/         # FastAPI AI chat backend (separate git repo, deployed to Hugging Face Spaces)
 ```
 
 ## Running Locally
@@ -28,7 +24,7 @@ Open [http://localhost:8080](http://localhost:8080).
 
 ## AI Chat Backend
 
-The chat backend lives in `my_app/`. See `API_SETUP.md` (in `my_app/`) for setup instructions. The `chat.html` frontend calls the API URL configured in its `TWEAK_DEFAULTS`.
+The chat backend lives in `my_app/` and is deployed independently to Hugging Face Spaces. See `my_app/README.md` and the root `CLAUDE.md` for setup and deployment details. `chat.html` calls the API URL configured in its `TWEAK_DEFAULTS`.
 
 ## Deployment
 
@@ -36,4 +32,4 @@ Deployed via Netlify. Push to `main` triggers a deploy automatically. No build s
 
 ## Environment Variables
 
-Copy `.env.example` to `.env` and fill in your values. Never commit `.env`.
+The FastAPI backend uses a local-only `.env` file (gitignored). See `my_app/README.md` for required variables.
