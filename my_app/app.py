@@ -9,6 +9,7 @@ from pydantic import BaseModel
 from pathlib import Path
 from datetime import datetime, timezone
 from fastapi import FastAPI, HTTPException, Request
+from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
@@ -547,7 +548,7 @@ async def chat(chat_request: ChatRequest, http_request: Request):
         raise HTTPException(status_code=400, detail="Message cannot be empty")
 
     try:
-        reply = me.chat(chat_request.message, chat_request.history)
+        reply = await run_in_threadpool(me.chat, chat_request.message, chat_request.history)
         return ChatResponse(reply=reply, success=True)
     except Exception as e:
         print(f"Chat error: {e}", flush=True)
