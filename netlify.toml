@@ -1,2 +1,15 @@
 [build]
   publish = "."
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(), microphone=(), camera=()"
+    # script-src needs 'unsafe-inline'/'unsafe-eval' because index.html/chat.html use
+    # Babel standalone to transpile+run inline <script type="text/babel"> JSX at runtime
+    # (no build step, by design - see CLAUDE.md). style-src needs 'unsafe-inline' because
+    # React renders inline `style` attributes. connect-src allows the HF Space chat API.
+    Content-Security-Policy = "default-src 'self'; script-src 'self' https://unpkg.com 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://glunetta02-career-conversation.hf.space; frame-ancestors 'none'; base-uri 'self'; object-src 'none'; form-action 'self'"
