@@ -5,9 +5,10 @@ import os
 import time
 import requests
 from collections import defaultdict
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from pathlib import Path
 from datetime import datetime, timezone
+from typing import Literal
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
@@ -39,17 +40,33 @@ def record_user_details(email, name="Name not provided", notes="not provided"):
     push(f"Recording {name} with email {email} and notes {notes}")
     return {"recorded": "ok"}
 
+
+# Bound on-disk growth of the append-only jsonl logs: once a log file exceeds
+# this size, roll it to a single ".1.jsonl" backup instead of growing forever.
+MAX_LOG_BYTES = 5_000_000
+
+
+def _append_jsonl_with_rotation(path: Path, record: dict) -> None:
+    """Append one JSON record to path, rotating to a single .1 backup if path has grown too large."""
+    path.parent.mkdir(exist_ok=True)
+    try:
+        if path.exists() and path.stat().st_size >= MAX_LOG_BYTES:
+            backup = path.with_suffix(path.suffix + ".1")
+            path.replace(backup)
+    except OSError as e:
+        print(f"Failed to rotate log {path}: {e}", flush=True)
+    with open(path, "a", encoding="utf-8") as f:
+        f.write(json.dumps(record) + "\n")
+
+
 def record_unknown_question(question):
     push(f"Recording {question}")
     try:
-        data_dir = Path("data")
-        data_dir.mkdir(exist_ok=True)
         log = {
             "question": question,
             "timestamp": datetime.now(timezone.utc).isoformat(),
         }
-        with open(data_dir / "unknown_questions.jsonl", "a", encoding="utf-8") as f:
-            f.write(json.dumps(log) + "\n")
+        _append_jsonl_with_rotation(Path("data") / "unknown_questions.jsonl", log)
     except Exception as e:
         print(f"Failed to log unknown question: {e}", flush=True)
     return {"recorded": "ok"}
@@ -103,9 +120,21 @@ class Evaluation(BaseModel):
     feedback: str
 
 
+# Caps on request size: bound both prompt-injection surface (no client-supplied
+# "system"/"tool" roles) and OpenAI cost per request (no unbounded message/history).
+MAX_MESSAGE_CHARS = 4000
+MAX_HISTORY_MESSAGES = 40
+MAX_HISTORY_CHARS = 20000
+
+
+class ChatMessage(BaseModel):
+    role: Literal["user", "assistant"] = "user"
+    content: str = ""
+
+
 class ChatRequest(BaseModel):
     message: str
-    history: list = []
+    history: list[ChatMessage] = Field(default_factory=list)
 
 
 class ChatResponse(BaseModel):
@@ -364,8 +393,6 @@ The Agent has been provided with context on {self.name} in the form of their sum
     def log_evaluation(self, reply, message, history, evaluation: Evaluation, model: str):
         """Log evaluation results to data/evaluations.jsonl for offline analysis."""
         try:
-            data_dir = Path("data")
-            data_dir.mkdir(exist_ok=True)
             log = {
                 "timestamp": datetime.now(timezone.utc).isoformat(),
                 "model": model,
@@ -375,8 +402,7 @@ The Agent has been provided with context on {self.name} in the form of their sum
                 "is_acceptable": evaluation.is_acceptable,
                 "feedback": evaluation.feedback,
             }
-            with open(data_dir / "evaluations.jsonl", "a", encoding="utf-8") as f:
-                f.write(json.dumps(log) + "\n")
+            _append_jsonl_with_rotation(Path("data") / "evaluations.jsonl", log)
         except Exception as e:
             print(f"Failed to log evaluation: {e}", flush=True)
     
@@ -450,8 +476,9 @@ The Agent has been provided with context on {self.name} in the form of their sum
     MAX_TOOL_ITERATIONS = 10
 
     def chat(self, message, history):
-        # Clean up history format
-        history = [{"role": h.get("role", "user"), "content": h.get("content", "")} for h in history]
+        # history arrives as validated ChatMessage objects (role restricted to
+        # user/assistant - see ChatMessage); convert to plain dicts for the OpenAI call.
+        history = [{"role": h.role, "content": h.content} for h in history]
         
         # Generate initial response
         messages = [{"role": "system", "content": self.system_prompt()}] + history + [{"role": "user", "content": message}]
@@ -502,15 +529,20 @@ app.add_middleware(
         "http://localhost:8000",
         "http://localhost:8080",
     ],
-    allow_credentials=True,
+    # No cookies/session auth are used anywhere in this API - every request is
+    # stateless, so there's no reason to allow credentialed cross-site requests.
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Initialize Me instance
+# Initialize Me instance. Catches EnvironmentError (missing OPENAI_API_KEY) and
+# FileNotFoundError (missing required me/*.txt context files) so a bad deploy
+# degrades to "AI service not initialized" 500s instead of crashing the whole
+# app at import time and taking down /health too.
 try:
     me = Me()
-except EnvironmentError as e:
+except (EnvironmentError, FileNotFoundError) as e:
     print(f"Failed to initialize: {e}", flush=True)
     me = None
 
@@ -546,6 +578,16 @@ async def chat(chat_request: ChatRequest, http_request: Request):
 
     if not chat_request.message or not chat_request.message.strip():
         raise HTTPException(status_code=400, detail="Message cannot be empty")
+
+    if len(chat_request.message) > MAX_MESSAGE_CHARS:
+        raise HTTPException(status_code=400, detail=f"Message too long (max {MAX_MESSAGE_CHARS} characters).")
+
+    if len(chat_request.history) > MAX_HISTORY_MESSAGES:
+        raise HTTPException(status_code=400, detail=f"Too many history messages (max {MAX_HISTORY_MESSAGES}).")
+
+    history_chars = sum(len(h.content) for h in chat_request.history)
+    if history_chars > MAX_HISTORY_CHARS:
+        raise HTTPException(status_code=400, detail="Conversation history too long.")
 
     try:
         reply = await run_in_threadpool(me.chat, chat_request.message, chat_request.history)
