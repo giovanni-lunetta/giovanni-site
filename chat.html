@@ -27,11 +27,12 @@
 <script type="text/babel">
 const { useState, useEffect, useRef } = React;
 
-const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+// Update apiUrl here if the HF Space URL changes (see CLAUDE.md).
+const SITE_CONFIG = {
   "theme": "light",
   "accent": "indigo",
-  "apiUrl": "https:\/\/glunetta02-career-conversation.hf.space\/chat"
-}/*EDITMODE-END*/;
+  "apiUrl": "https://glunetta02-career-conversation.hf.space/chat"
+};
 
 const ACCENTS = {
   gold:   { main: 'oklch(72% 0.155 68)',  dark: 'oklch(19% 0.055 68)',  light: 'oklch(94% 0.04 68)'  },
@@ -460,181 +461,10 @@ function ChatApp({ t, apiUrl }) {
 
 function App() {
   const sysTheme = useSystemTheme();
-  const [tweaks, setTweaksState] = useState(TWEAK_DEFAULTS);
-  const [showTweaks, setShowTweaks] = useState(false);
+  const effectiveTheme = SITE_CONFIG.theme === 'system' ? sysTheme : SITE_CONFIG.theme;
+  const t = buildTheme(effectiveTheme, SITE_CONFIG.accent);
 
-  const effectiveTheme = tweaks.theme === 'system' ? sysTheme : tweaks.theme;
-  const t = buildTheme(effectiveTheme, tweaks.accent);
-
-  const setTweak = (key, val) => {
-    setTweaksState(prev => {
-      const next = { ...prev, [key]: val };
-      window.parent.postMessage({ type: '__edit_mode_set_keys', edits: next }, '*');
-      return next;
-    });
-  };
-
-  useEffect(() => {
-    const handler = (e) => {
-      if (e.data?.type === '__activate_edit_mode') setShowTweaks(true);
-      if (e.data?.type === '__deactivate_edit_mode') setShowTweaks(false);
-    };
-    window.addEventListener('message', handler);
-    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
-    return () => window.removeEventListener('message', handler);
-  }, []);
-
-  return (
-    <>
-      <ChatApp t={t} apiUrl={tweaks.apiUrl} />
-      {showTweaks && (
-        <div style={{
-          position: 'fixed',
-          bottom: '1.5rem',
-          right: '1.5rem',
-          zIndex: 9999,
-          width: 280,
-          background: 'oklch(15% 0.018 45)',
-          border: '1px solid oklch(25% 0.02 45)',
-          borderRadius: 12,
-          boxShadow: '0 20px 48px oklch(0% 0 0 / 55%)',
-          overflow: 'hidden',
-          fontFamily: '"DM Sans", sans-serif',
-        }}>
-          <div style={{
-            padding: '0.875rem 1.25rem',
-            borderBottom: '1px solid oklch(25% 0.02 45)',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-          }}>
-            <p style={{
-              fontWeight: 600,
-              fontSize: '0.85rem',
-              color: 'oklch(85% 0.008 50)',
-              margin: 0,
-            }}>Chat Settings</p>
-            <button
-              onClick={() => {
-                setShowTweaks(false);
-                window.parent.postMessage({ type: '__edit_mode_dismissed' }, '*');
-              }}
-              style={{
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                color: 'oklch(50% 0.008 50)',
-                fontSize: '1.2rem',
-                lineHeight: 1,
-                padding: '0 0.25rem',
-              }}
-            >×</button>
-          </div>
-          <div style={{
-            padding: '1.125rem 1.25rem',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '1.25rem',
-            fontSize: '0.85rem',
-          }}>
-            <div>
-              <p style={{
-                fontSize: '0.68rem',
-                fontWeight: 600,
-                letterSpacing: '0.1em',
-                textTransform: 'uppercase',
-                color: 'oklch(50% 0.008 50)',
-                marginBottom: '0.5rem',
-                margin: 0,
-              }}>Theme</p>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                {['system', 'light', 'dark'].map(k => (
-                  <button
-                    key={k}
-                    onClick={() => setTweak('theme', k)}
-                    style={{
-                      flex: 1,
-                      padding: '0.45rem 0.5rem',
-                      borderRadius: 7,
-                      border: `1px solid ${tweaks.theme === k ? t.accent : 'oklch(25% 0.02 45)'}`,
-                      background: tweaks.theme === k ? t.accentBg : 'transparent',
-                      color: tweaks.theme === k ? t.accent : 'oklch(50% 0.008 50)',
-                      fontFamily: 'inherit',
-                      fontSize: '0.75rem',
-                      fontWeight: 500,
-                      cursor: 'pointer',
-                      textTransform: 'capitalize',
-                      transition: 'all 150ms ease',
-                    }}
-                  >{k}</button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <p style={{
-                fontSize: '0.68rem',
-                fontWeight: 600,
-                letterSpacing: '0.1em',
-                textTransform: 'uppercase',
-                color: 'oklch(50% 0.008 50)',
-                marginBottom: '0.5rem',
-                margin: 0,
-              }}>Accent</p>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                {Object.entries(ACCENTS).map(([k, v]) => (
-                  <button
-                    key={k}
-                    onClick={() => setTweak('accent', k)}
-                    style={{
-                      flex: 1,
-                      padding: '0.45rem 0.5rem',
-                      borderRadius: 7,
-                      border: `1px solid ${tweaks.accent === k ? v.main : 'oklch(25% 0.02 45)'}`,
-                      background: tweaks.accent === k ? v.dark : 'transparent',
-                      color: tweaks.accent === k ? v.main : 'oklch(50% 0.008 50)',
-                      fontFamily: 'inherit',
-                      fontSize: '0.75rem',
-                      fontWeight: 500,
-                      cursor: 'pointer',
-                      textTransform: 'capitalize',
-                      transition: 'all 150ms ease',
-                    }}
-                  >{k}</button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <label style={{
-                fontSize: '0.68rem',
-                fontWeight: 600,
-                letterSpacing: '0.1em',
-                textTransform: 'uppercase',
-                color: 'oklch(50% 0.008 50)',
-                marginBottom: '0.5rem',
-                display: 'block',
-                margin: 0,
-              }}>API URL</label>
-              <input
-                value={tweaks.apiUrl}
-                onChange={(e) => setTweak('apiUrl', e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '0.5rem',
-                  borderRadius: 6,
-                  border: `1px solid oklch(25% 0.02 45)`,
-                  background: 'oklch(18% 0.02 45)',
-                  color: 'oklch(85% 0.008 50)',
-                  fontFamily: 'inherit',
-                  fontSize: '0.75rem',
-                  outline: 'none',
-                }}
-              />
-            </div>
-          </div>
-        </div>
-      )}
-    </>
-  );
+  return <ChatApp t={t} apiUrl={SITE_CONFIG.apiUrl} />;
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(<App />);

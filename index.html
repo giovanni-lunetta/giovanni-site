@@ -26,10 +26,10 @@
 <script type="text/babel">
 const { useState, useEffect } = React;
 
-const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+const SITE_THEME = {
   "theme": "light",
   "accent": "indigo"
-}/*EDITMODE-END*/;
+};
 
 const ACCENTS = {
   gold:   { main: 'oklch(72% 0.155 68)',  dark: 'oklch(19% 0.055 68)',  light: 'oklch(94% 0.04 68)'  },
@@ -387,65 +387,11 @@ function ChatPage({ t }) {
   );
 }
 
-// ── Tweaks Panel ──────────────────────────────────────────────────────────────
-
-function TweaksPanel({ tweaks, setTweak, onClose }) {
-  const panelBg = 'oklch(15% 0.018 45)', panelBdr = 'oklch(25% 0.02 45)', labelClr = 'oklch(50% 0.008 50)', textClr = 'oklch(85% 0.008 50)';
-
-  function Chip({ active, color, bg, label, onClick }) {
-    return <button onClick={onClick} style={{ flex: 1, padding: '0.45rem 0.5rem', borderRadius: 7, border: `1px solid ${active ? color : panelBdr}`, background: active ? bg : 'transparent', color: active ? color : labelClr, fontFamily: '"DM Sans", sans-serif', fontSize: '0.78rem', fontWeight: 500, cursor: 'pointer', textTransform: 'capitalize', transition: 'all 150ms ease' }}>{label}</button>;
-  }
-
-  return (
-    <div style={{ position: 'fixed', bottom: '1.5rem', right: '1.5rem', zIndex: 9999, width: 240, background: panelBg, border: `1px solid ${panelBdr}`, borderRadius: 12, boxShadow: '0 20px 48px oklch(0% 0 0 / 55%)', overflow: 'hidden' }}>
-      <div style={{ padding: '0.875rem 1.25rem', borderBottom: `1px solid ${panelBdr}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <p style={{ fontFamily: '"DM Sans", sans-serif', fontWeight: 600, fontSize: '0.85rem', color: textClr }}>Tweaks</p>
-        <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: labelClr, fontSize: '1.2rem', lineHeight: 1, padding: '0 0.25rem' }}>×</button>
-      </div>
-      <div style={{ padding: '1.125rem 1.25rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-        <div>
-          <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: '0.68rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: labelClr, marginBottom: '0.5rem' }}>Theme</p>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            {['dark', 'light'].map(k => <Chip key={k} active={tweaks.theme === k} color={ACCENTS[tweaks.accent].main} bg={ACCENTS[tweaks.accent].dark} label={k} onClick={() => setTweak('theme', k)} />)}
-          </div>
-        </div>
-        <div>
-          <p style={{ fontFamily: '"DM Sans", sans-serif', fontSize: '0.68rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: labelClr, marginBottom: '0.5rem' }}>Accent</p>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            {Object.entries(ACCENTS).map(([k, v]) => <Chip key={k} active={tweaks.accent === k} color={v.main} bg={v.dark} label={k} onClick={() => setTweak('accent', k)} />)}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // ── App ───────────────────────────────────────────────────────────────────────
 
 function App() {
-  const [tweaks, setTweaksState] = useState(TWEAK_DEFAULTS);
   const [page, setPage] = useState('home');
-  const [showTweaks, setShowTweaks] = useState(false);
-
-  const setTweak = (key, val) => {
-    setTweaksState(prev => {
-      const next = { ...prev, [key]: val };
-      window.parent.postMessage({ type: '__edit_mode_set_keys', edits: next }, '*');
-      return next;
-    });
-  };
-
-  useEffect(() => {
-    const handler = (e) => {
-      if (e.data?.type === '__activate_edit_mode') setShowTweaks(true);
-      if (e.data?.type === '__deactivate_edit_mode') setShowTweaks(false);
-    };
-    window.addEventListener('message', handler);
-    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
-    return () => window.removeEventListener('message', handler);
-  }, []);
-
-  const t = buildTheme(tweaks.theme, tweaks.accent);
+  const t = buildTheme(SITE_THEME.theme, SITE_THEME.accent);
 
   return (
     <div style={{ background: t.bg, color: t.text, minHeight: '100vh', display: 'flex', flexDirection: 'column', overflowX: 'hidden', transition: 'background 350ms ease, color 350ms ease' }}>
@@ -455,9 +401,6 @@ function App() {
       {page === 'resume'  && <ResumePage  t={t} />}
       {page === 'chat'    && <ChatPage    t={t} />}
       <Footer t={t} />
-      {showTweaks && (
-        <TweaksPanel tweaks={tweaks} setTweak={setTweak} onClose={() => { setShowTweaks(false); window.parent.postMessage({ type: '__edit_mode_dismissed' }, '*'); }} />
-      )}
     </div>
   );
 }
